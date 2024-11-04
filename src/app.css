@@ -25,6 +25,7 @@ a:hover {
 }
 
 body {
+  touch-action: none;
   background-color: #000;
   margin: 0;
   display: flex;

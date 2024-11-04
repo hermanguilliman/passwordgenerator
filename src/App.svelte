@@ -65,13 +65,14 @@
     const hasSymbols = !includeSymbols || password.match(/[!@#$%^&*()_+\[\]{}|;:,.<>?]/);
     
     if (!(hasLower && hasUpper && hasNumbers && hasSymbols)) {
+      // Добавляем тактильный отклик при генерации
+      if (tg) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
       generatePassword();
     }
 
-    // Добавляем тактильный отклик при генерации
-    if (tg) {
-      tg.HapticFeedback.impactOccurred('light');
-    }
+
   };
 
   const copyToClipboard = () => {
