@@ -84,29 +84,31 @@
         <input type="range" bind:value={length} min="1" max="100" />
         <span>{length}</span>
       </div>
-      <div class="option">
-        <label>
-          <input type="checkbox" bind:checked={includeLowercase} />
-          <span>a-z</span>
-        </label>
-      </div>
-      <div class="option">
-        <label>
-          <input type="checkbox" bind:checked={includeUppercase} />
-          <span>A-Z</span>
-        </label>
-      </div>
-      <div class="option">
-        <label>
-          <input type="checkbox" bind:checked={includeNumbers} />
-          <span>0-9</span>
-        </label>
-      </div>
-      <div class="option">
-        <label>
-          <input type="checkbox" bind:checked={includeSymbols} />
-          <span>!@#$%^&*</span>
-        </label>
+      <div class="checkbox-options">
+        <div class="option">
+          <label>
+            <input type="checkbox" bind:checked={includeLowercase} />
+            <span>a-z</span>
+          </label>
+        </div>
+        <div class="option">
+          <label>
+            <input type="checkbox" bind:checked={includeUppercase} />
+            <span>A-Z</span>
+          </label>
+        </div>
+        <div class="option">
+          <label>
+            <input type="checkbox" bind:checked={includeNumbers} />
+            <span>0-9</span>
+          </label>
+        </div>
+        <div class="option">
+          <label>
+            <input type="checkbox" bind:checked={includeSymbols} />
+            <span>!@#$%^&*</span>
+          </label>
+        </div>
       </div>
     </div>
     <button on:click={generatePassword} class="generate-button">Сгенерировать пароль</button>
@@ -115,7 +117,6 @@
     <p class="error">{error}</p>
   {/if}
 </main>
-
 
 <style>
   :root {
@@ -134,59 +135,76 @@
     min-height: 100vh;
     background-color: var(--background-color);
     color: var(--text-color);
+    padding: 1rem;
+    box-sizing: border-box;
+    width: 100%;
   }
 
   h1 {
-	font-size: 50pt;
+    font-size: clamp(2rem, 8vw, 4rem);
     margin-bottom: 1rem;
     color: var(--primary-color);
+    text-align: center;
+    word-wrap: break-word;
   }
 
   .card {
     background-color: var(--card-background);
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
     width: 100%;
     max-width: 500px;
+    padding: 1rem;
+    box-sizing: border-box;
     font-family: 'Nunito Sans';
-    font-size: 14pt;
+    font-size: clamp(1rem, 4vw, 1.5rem);
   }
 
   .password-display {
     display: flex;
     margin-bottom: 1rem;
+    width: 100%;
   }
 
   input[type="text"] {
     font-family: 'HandJet';
     font-weight: 600;
     background-color: #fff372;
-    letter-spacing: .2rem;
+    letter-spacing: 0.1em;
     flex-grow: 1;
     padding: 0.5rem;
-    font-size: 2rem;
+    font-size: clamp(1rem, 5vw, 2rem);
     border: 1px solid #93ff05;
-    border-radius: 1px 0 0 1px;
+    border-radius: 4px 0 0 4px;
+    width: 0;
+    min-width: 0;
+    overflow-x: auto;
   }
 
   .copy-button {
-    padding: 0.5rem 1rem;
-    font-size: 1.5rem;
+    padding: 0.5rem;
+    font-size: clamp(1rem, 4vw, 1.5rem);
     background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: 0 4px 4px 0;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    white-space: nowrap;
   }
 
-  .copy-button:hover {
-    background-color: #bdfa68;
+  .checkbox-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1rem;
   }
 
-  .copy-button.copied {
-    background-color: var(--secondary-color);
+  .checkbox-options .option {
+    flex: 0 1 auto;
+    min-width: 80px;
+    margin: 0;
   }
 
   .options {
@@ -197,31 +215,33 @@
     display: flex;
     align-items: center;
     margin-bottom: 0.5rem;
+    gap: 0.5rem;
   }
 
   .option label {
     display: flex;
     align-items: center;
+    gap: 0.5rem;
     cursor: pointer;
+    white-space: nowrap;
   }
 
   input[type="checkbox"] {
-    margin-right: 0.5rem;
+    margin: 0;
   }
 
   input[type="range"] {
-    color: #FFF;
-    width: 100%;
-    margin-right: 0.5rem;
+    flex: 1;
+    min-width: 0;
   }
 
   .generate-button {
     font-family: 'HandJet';
     width: 100%;
     padding: 0.75rem;
-    font-size: 2rem;
+    font-size: clamp(1.2rem, 5vw, 2rem);
     font-weight: 900;
-    letter-spacing: .2rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     background-color: var(--primary-color);
     color: black;
@@ -229,15 +249,40 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-  }
-
-  .generate-button:hover {
-    background-color: #bdfa68;
-	
+    word-wrap: break-word;
   }
 
   .error {
     color: #d32f2f;
     margin-top: 1rem;
+    text-align: center;
+    word-wrap: break-word;
+  }
+
+  @media (max-width: 480px) {
+    .card {
+      padding: 0.75rem;
+    }
+
+    .checkbox-options {
+      flex-direction: column;
+    }
+
+    .checkbox-options .option {
+      width: 100%;
+    }
+
+    .option {
+      margin-bottom: 0.25rem;
+    }
+
+    input[type="text"] {
+      font-size: 1rem;
+      padding: 0.25rem;
+    }
+
+    .copy-button {
+      padding: 0.25rem 0.5rem;
+    }
   }
 </style>
