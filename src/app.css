@@ -266,6 +266,18 @@ input:not(:checked)+.slider .latin {
   margin-bottom: 1rem;
 }
 
+.options span {
+  display: inline-block;
+  width: 2.5em; /* Ширина для мобильных устройств */
+  text-align: center;
+}
+
+@media (min-width: 1000px) {
+  .options span {
+    display: contents;
+  }
+}
+
 .option {
   display: flex;
   align-items: center;
