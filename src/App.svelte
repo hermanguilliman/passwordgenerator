@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   
   let length = 12;
@@ -10,8 +10,16 @@
   let password = '';
   let error = '';
   let copied = false;
-  let tg;
+  let tg: TelegramWebApp | undefined;
 
+  interface TelegramWebApp {
+    expand: () => void;
+    HapticFeedback: {
+      impactOccurred: (type: string) => void;
+      notificationOccurred: (type: string) => void;
+    };
+  }
+  
   onMount(() => {
     // Подключаем скрипт Telegram Web App
     const script = document.createElement('script');

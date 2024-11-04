@@ -296,6 +296,7 @@ input:not(:checked)+.slider .latin {
 }
 
 input[type="checkbox"] {
+  accent-color: #93ff05;
   margin: 0;
   cursor: pointer;
   width: 1.2em;
