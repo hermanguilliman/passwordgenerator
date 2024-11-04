@@ -10,9 +10,22 @@
   let password = '';
   let error = '';
   let copied = false;
+  let tg;
 
   onMount(() => {
-    generatePassword();
+    // Подключаем скрипт Telegram Web App
+    const script = document.createElement('script');
+    script.src = 'https://telegram.org/js/telegram-web-app.js';
+    script.async = true;
+    script.onload = () => {
+      // После загрузки скрипта инициализируем объект telegram-web-app
+      tg = window.Telegram.WebApp;
+      // Расширяем окно на всю высоту
+      tg.expand();
+      // Генерируем начальный пароль
+      generatePassword();
+    };
+    document.head.appendChild(script);
   });
 
   const generatePassword = () => {
@@ -54,6 +67,11 @@
     if (!(hasLower && hasUpper && hasNumbers && hasSymbols)) {
       generatePassword();
     }
+
+    // Добавляем тактильный отклик при генерации
+    if (tg) {
+      tg.HapticFeedback.impactOccurred('light');
+    }
   };
 
   const copyToClipboard = () => {
@@ -63,10 +81,18 @@
     }
     navigator.clipboard.writeText(password).then(() => {
       copied = true;
+      // Добавляем тактильный отклик при копировании
+      if (tg) {
+        tg.HapticFeedback.notificationOccurred('success');
+      }
       setTimeout(() => copied = false, 2000);
     }).catch(err => {
       console.error('Ошибка при копировании: ', err);
       error = 'Не удалось скопировать пароль';
+      // Добавляем тактильный отклик при ошибке
+      if (tg) {
+        tg.HapticFeedback.notificationOccurred('error');
+      }
     });
   };
 
@@ -139,6 +165,7 @@
 </main>
 
 <style>
+  /* Стили остаются без изменений */
   :root {
     --primary-color: #9ef523;
     --secondary-color: #9ef523;
@@ -190,11 +217,11 @@
     font-family: 'HandJet';
     font-weight: 600;
     background-color: #fff372;
-    color: #000000 !important; /* Принудительно устанавливаем черный цвет */
+    color: #000000 !important;
     letter-spacing: 0.1em;
     flex-grow: 1;
-    padding: 0.75rem;  /* Увеличили padding */
-    font-size: clamp(1.2rem, 5vw, 2.5rem); /* Увеличили размер шрифта */
+    padding: 0.75rem;
+    font-size: clamp(1.2rem, 5vw, 2.5rem);
     border: 1px solid #93ff05;
     border-radius: 4px 0 0 4px;
     width: 0;
@@ -203,8 +230,8 @@
   }
 
   .copy-button {
-    padding: 0.75rem 1rem; /* Увеличили padding */
-    font-size: clamp(1.2rem, 4vw, 1.8rem); /* Увеличили размер шрифта */
+    padding: 0.75rem 1rem;
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
     background-color: var(--primary-color);
     color: rgb(0, 0, 0);
     border: none;
@@ -316,7 +343,7 @@
     align-items: center;
     margin-bottom: 0.5rem;
     gap: 0.5rem;
-    color: var(--text-color); /* Убедимся, что текст всегда белый */
+    color: var(--text-color);
   }
 
   .option label {
@@ -325,7 +352,7 @@
     gap: 0.5rem;
     cursor: pointer;
     white-space: nowrap;
-    color: var(--text-color); /* Убедимся, что текст всегда белый */
+    color: var(--text-color);
   }
 
   input[type="checkbox"] {
@@ -382,14 +409,14 @@
     }
 
     input[type="text"] {
-      font-size: clamp(1rem, 5vw, 1.8rem); /* Увеличили минимальный размер шрифта */
-      padding: 0.5rem; /* Увеличили padding */
-      color: #000000 !important; /* Убедимся, что цвет текста всегда черный */
+      font-size: clamp(1rem, 5vw, 1.8rem);
+      padding: 0.5rem;
+      color: #000000 !important;
     }
 
     .copy-button {
-      padding: 0.5rem 0.75rem; /* Увеличили padding */
-      font-size: clamp(1rem, 4vw, 1.5rem); /* Увеличили размер шрифта */
+      padding: 0.5rem 0.75rem;
+      font-size: clamp(1rem, 4vw, 1.5rem);
     }
 
     .switch {
