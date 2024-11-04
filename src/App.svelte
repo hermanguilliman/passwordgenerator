@@ -42,6 +42,7 @@
     if (includeNumbers) characters += numbers;
     if (includeSymbols) characters += symbols;
     
+    
     if (characters.length === 0) {
       error = 'Выберите хотя бы один тип символов';
       password = '';
@@ -103,6 +104,10 @@
   }
 
   $: if (useCyrillic !== undefined) {
+    generatePassword();
+  }
+
+  $: if (length >= 1 && length <= 100) {
     generatePassword();
   }
 </script>
