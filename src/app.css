@@ -56,9 +56,6 @@ h1 {
   word-wrap: break-word;
 }
 
-.card {
-  padding: 2em;
-}
 
 #app {
   max-width: 1000px;
@@ -124,19 +121,21 @@ main {
   max-width: 500px;
   padding: 1rem;
   box-sizing: border-box;
-  font-family: 'Nunito Sans';
-  font-size: clamp(1rem, 4vw, 1.5rem);
+  font-family: 'Handjet';
+  font-weight: 500;
+  font-size: clamp(2rem, 4vw, 1.5rem);
 }
 
 .password-display {
   display: flex;
   margin-bottom: 1rem;
   width: 100%;
+  font-size: clamp(1.5rem, 4vw, 1.5rem);
 }
 
 input[type="text"] {
   font-family: 'HandJet';
-  font-weight: 400;
+  font-weight: 500;
   background-color: #f5f5dc;
   color: #000000 !important;
   letter-spacing: 0.1em;
@@ -213,7 +212,7 @@ input[type="text"] {
 
 .latin, .cyrillic {
   color: black;
-  font-weight: 400;
+  font-weight: 700;
   z-index: 2;
   font-size: 1.4em;
   transition: color 0.4s;
