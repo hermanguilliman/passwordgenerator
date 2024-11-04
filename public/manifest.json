@@ -1,0 +1,18 @@
+
+{
+  "short_name": “Генератор,
+  "name": “Генератор “паролей,
+  "icons": [
+    {
+      "src": "/icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FFFFFF",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#FFFFFF",
+  "prefer_related_applications": false
+}
