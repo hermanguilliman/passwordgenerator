@@ -344,6 +344,7 @@ input[type="range"]::-moz-range-thumb {
 
 .error {
   color: #d32f2f;
+  font-size: 20pt;
   margin-top: 1rem;
   text-align: center;
   word-wrap: break-word;

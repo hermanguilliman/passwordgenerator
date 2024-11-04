@@ -35,45 +35,40 @@
     const cyrillicUpper = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
     const numbers = '0123456789';
     const symbols = '!@#$%^&*()_+[]{}|;:,.<>?';
-    
+
     let characters = '';
     if (includeLowercase) characters += useCyrillic ? cyrillicLower : latinLower;
     if (includeUppercase) characters += useCyrillic ? cyrillicUpper : latinUpper;
     if (includeNumbers) characters += numbers;
     if (includeSymbols) characters += symbols;
-    
-    
+
     if (characters.length === 0) {
       error = 'Выберите хотя бы один тип символов';
       password = '';
       return;
     }
-    
+
     error = '';
     password = '';
     for (let i = 0; i < length; i++) {
       const randomIndex = Math.floor(Math.random() * characters.length);
       password += characters[randomIndex];
     }
-    
-    const hasLower = !includeLowercase || (useCyrillic ? 
-      password.match(/[а-яё]/i) : 
-      password.match(/[a-z]/));
-    const hasUpper = !includeUppercase || (useCyrillic ? 
-      password.match(/[А-ЯЁ]/i) : 
-      password.match(/[A-Z]/));
+
+    // Упрощаем проверку типов символов, если длина = 1
+    if (length === 1) return;
+
+    const hasLower = !includeLowercase || (useCyrillic ? password.match(/[а-яё]/i) : password.match(/[a-z]/));
+    const hasUpper = !includeUppercase || (useCyrillic ? password.match(/[А-ЯЁ]/i) : password.match(/[A-Z]/));
     const hasNumbers = !includeNumbers || password.match(/[0-9]/);
     const hasSymbols = !includeSymbols || password.match(/[!@#$%^&*()_+\[\]{}|;:,.<>?]/);
-    
+
     if (!(hasLower && hasUpper && hasNumbers && hasSymbols)) {
-      // Добавляем тактильный отклик при генерации
       if (tg) {
         tg.HapticFeedback.impactOccurred('light');
       }
       generatePassword();
     }
-
-
   };
 
   const copyToClipboard = () => {
@@ -110,6 +105,22 @@
   $: if (length >= 1 && length <= 100) {
     generatePassword();
   }
+
+  $: if (includeLowercase || !includeLowercase) {
+    generatePassword();
+  }
+
+  $: if (includeUppercase || !includeUppercase) {
+    generatePassword();
+  }
+
+  $: if (includeNumbers || !includeNumbers) {
+    generatePassword();
+  }
+
+  $: if (includeSymbols || !includeSymbols) {
+    generatePassword();
+  }
 </script>
 
 <main>
@@ -133,7 +144,7 @@
     <div class="options">
       <div class="option">
         <label for="length">Длина:</label>
-        <input type="range" bind:value={length} min="1" max="100" />
+        <input type="range" bind:value={length} min="12" max="100" />
         <span>{length}</span>
       </div>
       <div class="checkbox-options">
