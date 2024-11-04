@@ -6,6 +6,7 @@
   let includeUppercase = true;
   let includeNumbers = true;
   let includeSymbols = true;
+  let useCyrillic = false;
   let password = '';
   let error = '';
   let copied = false;
@@ -15,14 +16,16 @@
   });
 
   const generatePassword = () => {
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const latinLower = 'abcdefghijklmnopqrstuvwxyz';
+    const latinUpper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const cyrillicLower = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+    const cyrillicUpper = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
     const numbers = '0123456789';
     const symbols = '!@#$%^&*()_+[]{}|;:,.<>?';
     
     let characters = '';
-    if (includeLowercase) characters += lowercase;
-    if (includeUppercase) characters += uppercase;
+    if (includeLowercase) characters += useCyrillic ? cyrillicLower : latinLower;
+    if (includeUppercase) characters += useCyrillic ? cyrillicUpper : latinUpper;
     if (includeNumbers) characters += numbers;
     if (includeSymbols) characters += symbols;
     
@@ -39,12 +42,17 @@
       password += characters[randomIndex];
     }
     
-    let hasLowercase = !includeLowercase || password.match(/[a-z]/);
-    let hasUppercase = !includeUppercase || password.match(/[A-Z]/);
-    let hasNumbers = !includeNumbers || password.match(/[0-9]/);
-    let hasSymbols = !includeSymbols || password.match(/[!@#$%^&*()_+\[\]{}|;:,.<>?]/);
+    // Проверяем наличие всех выбранных типов символов
+    const hasLower = !includeLowercase || (useCyrillic ? 
+      password.match(/[а-яё]/i) : 
+      password.match(/[a-z]/));
+    const hasUpper = !includeUppercase || (useCyrillic ? 
+      password.match(/[А-ЯЁ]/i) : 
+      password.match(/[A-Z]/));
+    const hasNumbers = !includeNumbers || password.match(/[0-9]/);
+    const hasSymbols = !includeSymbols || password.match(/[!@#$%^&*()_+\[\]{}|;:,.<>?]/);
     
-    if (!(hasLowercase && hasUppercase && hasNumbers && hasSymbols)) {
+    if (!(hasLower && hasUpper && hasNumbers && hasSymbols)) {
       generatePassword();
     }
   };
@@ -67,6 +75,11 @@
     if (length < 1) length = 1;
     if (length > 100) length = 100;
   }
+
+  // При изменении типа алфавита генерируем новый пароль
+  $: if (useCyrillic !== undefined) {
+    generatePassword();
+  }
 </script>
 
 <main>
@@ -75,7 +88,7 @@
     <div class="password-display">
       <input type="text" value={password} readonly />
       <button on:click={copyToClipboard} class="copy-button" class:copied>
-        {copied ? '✓' : '📋'}
+        {copied ? 'Скопировано!' : '📋'}
       </button>
     </div>
     <div class="options">
@@ -84,17 +97,26 @@
         <input type="range" bind:value={length} min="1" max="100" />
         <span>{length}</span>
       </div>
+      <div class="alphabet-switch">
+        <label class="switch">
+          <input type="checkbox" bind:checked={useCyrillic}>
+          <span class="slider">
+            <span class="latin">ABC</span>
+            <span class="cyrillic">АБВ</span>
+          </span>
+        </label>
+      </div>
       <div class="checkbox-options">
         <div class="option">
           <label>
             <input type="checkbox" bind:checked={includeLowercase} />
-            <span>a-z</span>
+            <span>{useCyrillic ? 'а-я' : 'a-z'}</span>
           </label>
         </div>
         <div class="option">
           <label>
             <input type="checkbox" bind:checked={includeUppercase} />
-            <span>A-Z</span>
+            <span>{useCyrillic ? 'А-Я' : 'A-Z'}</span>
           </label>
         </div>
         <div class="option">
@@ -135,7 +157,7 @@
     min-height: 100vh;
     background-color: var(--background-color);
     color: var(--text-color);
-    padding: 1rem;
+    padding: 0.5rem;
     box-sizing: border-box;
     width: 100%;
   }
@@ -185,12 +207,91 @@
     padding: 0.5rem;
     font-size: clamp(1rem, 4vw, 1.5rem);
     background-color: var(--primary-color);
-    color: white;
+    color: rgb(0, 0, 0);
     border: none;
     border-radius: 0 4px 4px 0;
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap;
+  }
+
+  .alphabet-switch {
+    margin: 1.5rem 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 250px; /* Увеличили ширину с 160px до 240px */
+    height: 48px; /* Увеличили высоту с 40px до 48px */
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #2c2c2c;
+    transition: 0.4s;
+    border-radius: 10px; /* Увеличили радиус для соответствия новому размеру */
+    border: 2px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px; /* Увеличили отступы с 15px до 30px */
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 38px; /* Увеличили высоту ползунка */
+    width: 122px; /* Увеличили ширину ползунка */
+    left: 2px;
+    bottom: 3px;
+    background-color: var(--primary-color);
+    transition: 0.4s;
+    border-radius: 5px; /* Половина высоты для скругления */
+    z-index: 1;
+  }
+
+  .latin, .cyrillic {
+    color: black;
+    font-weight: bold;
+    z-index: 2;
+    font-size: 1.4em; /* Увеличили размер шрифта */
+    transition: color 0.4s;
+    width: 60px; /* Фиксированная ширина для текста */
+    text-align: center; /* Центрирование текста */
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(120px); /* Увеличили смещение в соответствии с новой шириной */
+  }
+
+  input:checked + .slider .latin {
+    color: var(--primary-color);
+  }
+
+  input:not(:checked) + .slider .cyrillic {
+    color: var(--primary-color);
+  }
+
+  input:checked + .slider .cyrillic {
+    color: black;
+  }
+
+  input:not(:checked) + .slider .latin {
+    color: black;
   }
 
   .checkbox-options {
@@ -228,6 +329,9 @@
 
   input[type="checkbox"] {
     margin: 0;
+    cursor: pointer;
+    width: 1.2em;
+    height: 1.2em;
   }
 
   input[type="range"] {
@@ -283,6 +387,31 @@
 
     .copy-button {
       padding: 0.25rem 0.5rem;
+    }
+  }
+  @media (max-width: 480px) {
+    .switch {
+      width: 184px; /* Уменьшаем размер на мобильных */
+      height: 40px;
+    }
+
+    .slider {
+      padding: 0 20px;
+    }
+
+    .slider:before {
+      height: 32px;
+      width: 85px;
+      bottom: 2px;
+    }
+
+    .latin, .cyrillic {
+      font-size: 1.2em;
+      width: 45px;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(90px);
     }
   }
 </style>
