@@ -42,7 +42,6 @@
       password += characters[randomIndex];
     }
     
-    // Проверяем наличие всех выбранных типов символов
     const hasLower = !includeLowercase || (useCyrillic ? 
       password.match(/[а-яё]/i) : 
       password.match(/[a-z]/));
@@ -76,7 +75,6 @@
     if (length > 100) length = 100;
   }
 
-  // При изменении типа алфавита генерируем новый пароль
   $: if (useCyrillic !== undefined) {
     generatePassword();
   }
@@ -192,10 +190,11 @@
     font-family: 'HandJet';
     font-weight: 600;
     background-color: #fff372;
+    color: #000000 !important; /* Принудительно устанавливаем черный цвет */
     letter-spacing: 0.1em;
     flex-grow: 1;
-    padding: 0.5rem;
-    font-size: clamp(1rem, 5vw, 2rem);
+    padding: 0.75rem;  /* Увеличили padding */
+    font-size: clamp(1.2rem, 5vw, 2.5rem); /* Увеличили размер шрифта */
     border: 1px solid #93ff05;
     border-radius: 4px 0 0 4px;
     width: 0;
@@ -204,8 +203,8 @@
   }
 
   .copy-button {
-    padding: 0.5rem;
-    font-size: clamp(1rem, 4vw, 1.5rem);
+    padding: 0.75rem 1rem; /* Увеличили padding */
+    font-size: clamp(1.2rem, 4vw, 1.8rem); /* Увеличили размер шрифта */
     background-color: var(--primary-color);
     color: rgb(0, 0, 0);
     border: none;
@@ -224,8 +223,8 @@
   .switch {
     position: relative;
     display: inline-block;
-    width: 250px; /* Увеличили ширину с 160px до 240px */
-    height: 48px; /* Увеличили высоту с 40px до 48px */
+    width: 250px;
+    height: 48px;
   }
 
   .switch input {
@@ -243,24 +242,24 @@
     bottom: 0;
     background-color: #2c2c2c;
     transition: 0.4s;
-    border-radius: 10px; /* Увеличили радиус для соответствия новому размеру */
+    border-radius: 10px;
     border: 2px solid var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 30px; /* Увеличили отступы с 15px до 30px */
+    padding: 0 30px;
   }
 
   .slider:before {
     position: absolute;
     content: "";
-    height: 38px; /* Увеличили высоту ползунка */
-    width: 122px; /* Увеличили ширину ползунка */
+    height: 38px;
+    width: 122px;
     left: 2px;
     bottom: 3px;
     background-color: var(--primary-color);
     transition: 0.4s;
-    border-radius: 5px; /* Половина высоты для скругления */
+    border-radius: 5px;
     z-index: 1;
   }
 
@@ -268,14 +267,14 @@
     color: black;
     font-weight: bold;
     z-index: 2;
-    font-size: 1.4em; /* Увеличили размер шрифта */
+    font-size: 1.4em;
     transition: color 0.4s;
-    width: 60px; /* Фиксированная ширина для текста */
-    text-align: center; /* Центрирование текста */
+    width: 60px;
+    text-align: center;
   }
 
   input:checked + .slider:before {
-    transform: translateX(120px); /* Увеличили смещение в соответствии с новой шириной */
+    transform: translateX(120px);
   }
 
   input:checked + .slider .latin {
@@ -317,6 +316,7 @@
     align-items: center;
     margin-bottom: 0.5rem;
     gap: 0.5rem;
+    color: var(--text-color); /* Убедимся, что текст всегда белый */
   }
 
   .option label {
@@ -325,6 +325,7 @@
     gap: 0.5rem;
     cursor: pointer;
     white-space: nowrap;
+    color: var(--text-color); /* Убедимся, что текст всегда белый */
   }
 
   input[type="checkbox"] {
@@ -381,17 +382,18 @@
     }
 
     input[type="text"] {
-      font-size: 1rem;
-      padding: 0.25rem;
+      font-size: clamp(1rem, 5vw, 1.8rem); /* Увеличили минимальный размер шрифта */
+      padding: 0.5rem; /* Увеличили padding */
+      color: #000000 !important; /* Убедимся, что цвет текста всегда черный */
     }
 
     .copy-button {
-      padding: 0.25rem 0.5rem;
+      padding: 0.5rem 0.75rem; /* Увеличили padding */
+      font-size: clamp(1rem, 4vw, 1.5rem); /* Увеличили размер шрифта */
     }
-  }
-  @media (max-width: 480px) {
+
     .switch {
-      width: 184px; /* Уменьшаем размер на мобильных */
+      width: 184px;
       height: 40px;
     }
 
