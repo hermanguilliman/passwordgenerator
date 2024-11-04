@@ -132,7 +132,6 @@
 </script>
 
 <main>
-  <h1>Генератор паролей</h1>
   <div class="card">
     <div class="password-display">
       <input type="text" value={password} readonly />
