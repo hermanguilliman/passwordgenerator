@@ -127,18 +127,17 @@
   }
 
   main {
-    font-family: 'Balsamiq Sans';
+    font-family: 'HandJet';
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
     background-color: var(--background-color);
     color: var(--text-color);
-    padding: 2rem;
   }
 
   h1 {
-	font-size: 35pt;
+	font-size: 50pt;
     margin-bottom: 1rem;
     color: var(--primary-color);
   }
@@ -149,7 +148,9 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 2rem;
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
+    font-family: 'Nunito Sans';
+    font-size: 14pt;
   }
 
   .password-display {
@@ -158,16 +159,20 @@
   }
 
   input[type="text"] {
+    font-family: 'HandJet';
+    font-weight: 600;
+    background-color: #fff372;
+    letter-spacing: .2rem;
     flex-grow: 1;
     padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px 0 0 4px;
+    font-size: 2rem;
+    border: 1px solid #93ff05;
+    border-radius: 1px 0 0 1px;
   }
 
   .copy-button {
     padding: 0.5rem 1rem;
-    font-size: 1rem;
+    font-size: 1.5rem;
     background-color: var(--primary-color);
     color: white;
     border: none;
@@ -211,9 +216,13 @@
   }
 
   .generate-button {
+    font-family: 'HandJet';
     width: 100%;
     padding: 0.75rem;
-    font-size: 1rem;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: .2rem;
+    text-transform: uppercase;
     background-color: var(--primary-color);
     color: black;
     border: none;
