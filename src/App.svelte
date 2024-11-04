@@ -116,20 +116,20 @@
         {copied ? 'Скопировано!' : '📋'}
       </button>
     </div>
+    <div class="alphabet-switch">
+      <label class="switch">
+        <input type="checkbox" bind:checked={useCyrillic}>
+        <span class="slider">
+          <span class="latin">ABC</span>
+          <span class="cyrillic">АБВ</span>
+        </span>
+      </label>
+    </div>
     <div class="options">
       <div class="option">
         <label for="length">Длина:</label>
         <input type="range" bind:value={length} min="1" max="100" />
         <span>{length}</span>
-      </div>
-      <div class="alphabet-switch">
-        <label class="switch">
-          <input type="checkbox" bind:checked={useCyrillic}>
-          <span class="slider">
-            <span class="latin">ABC</span>
-            <span class="cyrillic">АБВ</span>
-          </span>
-        </label>
       </div>
       <div class="checkbox-options">
         <div class="option">
