@@ -43,8 +43,8 @@ body {
   display: flex;
   place-items: center;
   min-width: 320px;
-  min-height: 50vh;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 h1 {
@@ -62,6 +62,7 @@ h1 {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  flex: 1;
 }
 
 button {
@@ -105,7 +106,6 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
   background-color: var(--background-color);
   color: var(--text-color);
   padding: 0.5rem;
@@ -260,7 +260,8 @@ input:not(:checked)+.slider .latin {
 
 .options span {
   display: inline-block;
-  width: 2.5em; /* Ширина для мобильных устройств */
+  width: 2.5em;
+  /* Ширина для мобильных устройств */
   text-align: center;
 }
 
@@ -311,6 +312,7 @@ input[type="range"] {
   outline: none;
   /* Убираем обводку */
 }
+
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -330,6 +332,7 @@ input[type="range"]::-moz-range-thumb {
   border-width: 0px;
   cursor: pointer;
 }
+
 .generate-button {
   font-family: 'HandJet';
   width: 100%;
@@ -407,6 +410,7 @@ input[type="range"]::-moz-range-thumb {
     transform: translateX(90px);
   }
 }
+
 /* Стили для header */
 header {
   background-color: var(--primary-color);
@@ -415,28 +419,28 @@ header {
   text-align: center;
   font-family: 'Nunito Sans';
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 100%; /* Занимает всю ширину */
-  position: relative; /* Относительное позиционирование */
+  width: 100%;
+  /* Занимает всю ширину */
+  position: relative;
+  /* Относительное позиционирование */
 }
 
-/* Стили для footer */
 footer {
   background-color: #1a1a1a;
   color: var(--text-color);
   padding: 1rem;
   text-align: center;
   font-family: 'Nunito Sans';
-  width: 100%; /* Занимает всю ширину */
-  position: relative; /* Относительное позиционирование */
+  width: 100%;
+  /* Занимает всю ширину */
+  position: relative;
+  /* Относительное позиционирование */
 }
 
 /* Общие стили для header и footer */
 header, footer {
-  box-sizing: border-box; /* Учитывает padding в ширине */
-}
-
-main {
-  flex: 1; /* Занимает оставшееся пространство */
+  box-sizing: border-box;
+  /* Учитывает padding в ширине */
 }
 
 header h1 {
