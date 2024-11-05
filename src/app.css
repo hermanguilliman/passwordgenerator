@@ -3,17 +3,13 @@
   src: url('/fonts/Handjet.ttf') format('truetype');
 }
 
-
-@font-face {
-  font-family: 'Nunito Sans';
-  src: url('/fonts/NunitoSans.ttf') format('truetype');
-}
-
 html, body {
   touch-action: manipulation;
   margin: 0;
   padding: 0;
   width: 100%;
+  font-family: 'HandJet';
+  color: var(--toxic-green);
 }
 
 main {

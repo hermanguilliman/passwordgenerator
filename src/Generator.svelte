@@ -143,6 +143,7 @@
 
 <div class="wrap">
   <div class="card">
+    Ваш новый пароль:
     <div class="password-display">
       <input type="text" value={password} readonly />
       <button on:click={copyToClipboard} class="copy-button" class:copied>
