@@ -12,6 +12,10 @@ html, body {
   color: var(--toxic-green);
 }
 
+#app {
+  margin: 0 auto;
+}
+
 main {
   display: flex;
   flex-direction: column;

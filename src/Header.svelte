@@ -115,19 +115,12 @@
   header {
     background-color: var(--toxic-green);
     color: #000;
-    padding: 1pt;
     text-align: center;
     font-family: "Handjet";
     font-size: 20pt;
-    width: auto;
+    width: 0 auto;
     position: relative;
     margin-bottom: 30pt;
-  }
-
-  span {
-    display: inline-block;
-    transition: color 0.1s ease;
-    white-space: pre;
   }
 
   .space {
