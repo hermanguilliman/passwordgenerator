@@ -440,6 +440,9 @@
   }
 
   .error {
+    font-family: "Handjet";
+    font-weight: 700;
+    font-size: 25pt;
     color: #d32f2f;
     font-size: 20pt;
     margin-top: 1rem;
