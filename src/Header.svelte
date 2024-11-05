@@ -12,7 +12,7 @@
 
   // Пропсы с значениями по умолчанию
   export let originalText: string = "Генератор паролей";
-  export let glitchProbability: number = 0.05;
+  export let glitchProbability: number = 0.1;
   export let minGlitches: number = 1;
   export let maxGlitches: number = 3;
   export let resetDelay: number = 150;
@@ -136,5 +136,6 @@
 
   h1 {
     white-space: nowrap;
+    font-weight: 600;
   }
 </style>
