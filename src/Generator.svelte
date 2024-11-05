@@ -60,30 +60,38 @@
 
     error = "";
     password = "";
-    for (let i = 0; i < length; i++) {
+
+    // Ensure at least one character from each selected type
+    if (includeLowercase)
+      password += characters.charAt(
+        Math.floor(
+          Math.random() *
+            (useCyrillic ? cyrillicLower.length : latinLower.length)
+        )
+      );
+    if (includeUppercase)
+      password += characters.charAt(
+        Math.floor(
+          Math.random() *
+            (useCyrillic ? cyrillicUpper.length : latinUpper.length)
+        )
+      );
+    if (includeNumbers)
+      password += characters.charAt(Math.floor(Math.random() * numbers.length));
+    if (includeSymbols)
+      password += characters.charAt(Math.floor(Math.random() * symbols.length));
+
+    // Fill the rest of the password length with random characters
+    for (let i = password.length; i < length; i++) {
       const randomIndex = Math.floor(Math.random() * characters.length);
       password += characters[randomIndex];
     }
 
-    // Упрощаем проверку типов символов, если длина = 1
-    if (length === 1) return;
-
-    const hasLower =
-      !includeLowercase ||
-      (useCyrillic ? password.match(/[а-яё]/i) : password.match(/[a-z]/));
-    const hasUpper =
-      !includeUppercase ||
-      (useCyrillic ? password.match(/[А-ЯЁ]/i) : password.match(/[A-Z]/));
-    const hasNumbers = !includeNumbers || password.match(/[0-9]/);
-    const hasSymbols =
-      !includeSymbols || password.match(/[!@#$%^&*()_+\[\]{}|;:,.<>?]/);
-
-    if (!(hasLower && hasUpper && hasNumbers && hasSymbols)) {
-      if (tg) {
-        tg.HapticFeedback.impactOccurred("light");
-      }
-      generatePassword();
-    }
+    // Shuffle the password to ensure randomness
+    password = password
+      .split("")
+      .sort(() => Math.random() - 0.5)
+      .join("");
   };
 
   const copyToClipboard = () => {
