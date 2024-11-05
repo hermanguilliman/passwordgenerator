@@ -118,7 +118,7 @@
     text-align: center;
     font-family: "Handjet";
     font-size: 20pt;
-    width: 0 auto;
+    width: auto;
     position: relative;
     margin-bottom: 30pt;
   }
@@ -128,7 +128,6 @@
   }
 
   h1 {
-    white-space: nowrap;
     font-weight: 600;
   }
 </style>
