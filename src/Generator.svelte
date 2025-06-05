@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let length = 12;
+  let length = 15;
   let includeLowercase = true;
   let includeUppercase = true;
   let includeNumbers = true;
@@ -170,7 +170,7 @@
     <div class="options">
       <div class="option">
         <label for="length">Длина:</label>
-        <input type="range" bind:value={length} min="12" max="100" />
+        <input type="range" bind:value={length} min="15" max="100" />
         <span>{length}</span>
       </div>
       <div class="checkbox-options">
