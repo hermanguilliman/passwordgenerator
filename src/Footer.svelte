@@ -1,5 +1,9 @@
+<script>
+  let currentYear = new Date().getFullYear();
+</script>
+
 <footer>
-  <p>Herman Guilliman © 2024</p>
+  <p><a href="https://t.me/hermanguilliman" target="_blank" rel="noopener noreferrer">Herman Guilliman © {currentYear}</a></p>
 </footer>
 
 <style>
@@ -17,10 +21,16 @@
     box-sizing: border-box;
   }
   footer p {
-    width: auto;
     margin: 0;
   }
-  footer p:hover {
+  footer p a {
+    color: inherit;
+    text-decoration: none;
+    font-family: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+  }
+  footer p a:hover {
     color: #ffd900;
   }
 </style>
