@@ -3,7 +3,7 @@
 </script>
 
 <footer>
-  <p><a href="https://t.me/hermanguilliman" target="_blank" rel="noopener noreferrer">Herman Guilliman © {currentYear}</a></p>
+  <p>Guilliman © {currentYear}</p>
 </footer>
 
 <style>
@@ -22,15 +22,5 @@
   }
   footer p {
     margin: 0;
-  }
-  footer p a {
-    color: inherit;
-    text-decoration: none;
-    font-family: inherit;
-    font-weight: inherit;
-    font-size: inherit;
-  }
-  footer p a:hover {
-    color: #ffd900;
   }
 </style>

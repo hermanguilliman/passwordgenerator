@@ -1,39 +1,19 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let length = 15;
-  let includeLowercase = true;
-  let includeUppercase = true;
-  let includeNumbers = true;
-  let includeSymbols = true;
-  let useCyrillic = false;
-  let password = "";
-  let error = "";
-  let copied = false;
-  let tg: TelegramWebApp | undefined;
+  let length:number = 15;
+  let includeLowercase:boolean = true;
+  let includeUppercase:boolean = true;
+  let includeNumbers:boolean = true;
+  let includeSymbols:boolean = true;
+  let useCyrillic:boolean = false;
+  let password:string = "";
+  let error:string = "";
+  let copied:boolean = false;
 
-  interface TelegramWebApp {
-    expand: () => void;
-    HapticFeedback: {
-      impactOccurred: (type: string) => void;
-      notificationOccurred: (type: string) => void;
-    };
-  }
 
   onMount(() => {
-    // Подключаем скрипт Telegram Web App
-    const script = document.createElement("script");
-    script.src = "https://telegram.org/js/telegram-web-app.js";
-    script.async = true;
-    script.onload = () => {
-      // После загрузки скрипта инициализируем объект telegram-web-app
-      tg = window.Telegram.WebApp;
-      // Расширяем окно на всю высоту
-      tg.expand();
-      // Генерируем начальный пароль
-      generatePassword();
-    };
-    document.head.appendChild(script);
+    generatePassword();
   });
 
   const generatePassword = () => {
@@ -88,12 +68,17 @@
     }
 
     // Shuffle the password to ensure randomness
-    password = password
-      .split("")
-      .sort(() => Math.random() - 0.5)
-      .join("");
+    password = shuffleArray(password.split("")).join("");
   };
 
+  const shuffleArray = (array: string[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
   const copyToClipboard = () => {
     if (!password) {
       error = "Сначала сгенерируйте пароль";
@@ -103,19 +88,11 @@
       .writeText(password)
       .then(() => {
         copied = true;
-        // Добавляем тактильный отклик при копировании
-        if (tg) {
-          tg.HapticFeedback.notificationOccurred("success");
-        }
         setTimeout(() => (copied = false), 2000);
       })
       .catch((err) => {
         console.error("Ошибка при копировании: ", err);
         error = "Не удалось скопировать пароль";
-        // Добавляем тактильный отклик при ошибке
-        if (tg) {
-          tg.HapticFeedback.notificationOccurred("error");
-        }
       });
   };
 
@@ -397,18 +374,14 @@
   input[type="range"] {
     flex: 1;
     min-width: 0;
-    -webkit-appearance: none;
-    /* Убираем стандартный стиль для WebKit браузеров */
+    appearance: none; /* Стандартное свойство */
+    -webkit-appearance: none; /* Для WebKit браузеров */
+    -moz-appearance: none; /* Для Firefox */
     width: 100%;
-    /* Ширина ползунка */
     height: 10px;
-    /* Высота трека */
     background: var(--toxic-green-dark);
-    /* Цвет трека */
     border-radius: 5px;
-    /* Закругление углов трека */
     outline: none;
-    /* Убираем обводку */
   }
 
   input[type="range"]::-webkit-slider-thumb {
