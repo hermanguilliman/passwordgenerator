@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let length:number = 15;
-  let includeLowercase:boolean = true;
-  let includeUppercase:boolean = true;
-  let includeNumbers:boolean = true;
-  let includeSymbols:boolean = true;
-  let useCyrillic:boolean = false;
-  let password:string = "";
-  let error:string = "";
-  let copied:boolean = false;
-
+  let length: number = 15;
+  let includeLowercase: boolean = true;
+  let includeUppercase: boolean = true;
+  let includeNumbers: boolean = true;
+  let includeSymbols: boolean = true;
+  let useCyrillic: boolean = false;
+  let escapeForDocker: boolean = false; // Новая опция для экранирования
+  let password: string = "";
+  let error: string = "";
+  let copied: boolean = false;
 
   onMount(() => {
     generatePassword();
@@ -22,7 +22,7 @@
     const cyrillicLower = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
     const cyrillicUpper = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
     const numbers = "0123456789";
-    const symbols = "!@#$%^&*()_+[]{}|;:,.<>?";
+    const symbols = "!@#$%^&*()_+[]{}|;:,.<>?"; // Убедитесь, что символы безопасны
 
     let characters = "";
     if (includeLowercase)
@@ -69,6 +69,11 @@
 
     // Shuffle the password to ensure randomness
     password = shuffleArray(password.split("")).join("");
+
+    // Экранирование для Docker, если включена опция
+    if (escapeForDocker) {
+      password = escapeDockerSpecialChars(password);
+    }
   };
 
   const shuffleArray = (array: string[]) => {
@@ -79,6 +84,18 @@
     }
     return shuffled;
   };
+
+  // Функция для экранирования специальных символов для Docker
+  const escapeDockerSpecialChars = (str: string): string => {
+    // Экранируем $ и \, так как они имеют особое значение в Docker
+    return str
+      .replace(/\\/g, "\\\\") // Экранируем обратный слэш
+      .replace(/\$/g, "\\$") // Экранируем знак доллара
+      .replace(/#/g, "\\#") // Экранируем # (для комментариев)
+      .replace(/"/g, '\\"') // Экранируем кавычки
+      .replace(/'/g, "\\'"); // Экранируем одинарные кавычки
+  };
+
   const copyToClipboard = () => {
     if (!password) {
       error = "Сначала сгенерируйте пароль";
@@ -101,7 +118,7 @@
     if (length > 100) length = 100;
   }
 
-  $: if (useCyrillic !== undefined) {
+  $: if (useCyrillic !== undefined || escapeForDocker !== undefined) {
     generatePassword();
   }
 
@@ -175,11 +192,17 @@
             <span>!@#$%^&*</span>
           </label>
         </div>
+        <div class="option">
+          <label>
+            <input type="checkbox" bind:checked={escapeForDocker} />
+            <span>Для Docker</span>
+          </label>
+        </div>
       </div>
     </div>
-    <button on:click={generatePassword} class="generate-button"
-      >Сгенерировать пароль</button
-    >
+    <button on:click={generatePassword} class="generate-button">
+      Сгенерировать пароль
+    </button>
   </div>
   {#if error}
     <p class="error">{error}</p>
@@ -483,6 +506,29 @@
 
     input:checked + .slider:before {
       transform: translateX(90px);
+    }
+  }
+.checkbox-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .checkbox-options .option {
+    flex: 0 1 auto;
+    min-width: 80px;
+    margin: 0;
+  }
+
+  @media (max-width: 1000px) {
+    .checkbox-options {
+      flex-direction: column;
+    }
+
+    .checkbox-options .option {
+      width: 100%;
     }
   }
 </style>
