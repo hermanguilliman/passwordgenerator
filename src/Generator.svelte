@@ -141,6 +141,10 @@
   $: if (includeSymbols || !includeSymbols) {
     generatePassword();
   }
+
+  $: if (!includeSymbols && escapeForDocker) {
+    escapeForDocker = false;
+  }
 </script>
 
 <div class="wrap">
