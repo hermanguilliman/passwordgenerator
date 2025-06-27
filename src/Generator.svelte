@@ -7,7 +7,6 @@
   let includeNumbers: boolean = true;
   let includeSymbols: boolean = true;
   let useCyrillic: boolean = false;
-  let escapeForDocker: boolean = false;
   let password: string = "";
   let error: string = "";
   let copied: boolean = false;
@@ -40,13 +39,12 @@
 
     error = "";
     let attempts = 0;
-    const maxAttempts = 100; // Ограничение на количество попыток
+    const maxAttempts = 100;
 
     do {
       password = "";
       attempts++;
 
-      // Гарантировать наличие хотя бы одного символа каждого выбранного типа
       if (includeLowercase)
         password += characters.charAt(
           Math.floor(
@@ -66,26 +64,16 @@
       if (includeSymbols)
         password += characters.charAt(Math.floor(Math.random() * symbols.length));
 
-      // Добавить случайные символы до достижения нужной длины
       for (let i = password.length; i < length; i++) {
         const randomIndex = Math.floor(Math.random() * characters.length);
         password += characters[randomIndex];
       }
 
-      // Перемешать пароль
       password = shuffleArray(password.split("")).join("");
-
-      // Применить экранирование, если включено
-      if (escapeForDocker) {
-        password = escapeDockerSpecialChars(password);
-      }
-
-      // Проверить длину и повторить, если она не совпадает
     } while (password.length !== length && attempts < maxAttempts);
 
-    // Если не удалось сгенерировать пароль нужной длины
     if (password.length !== length) {
-      error = "Не удалось сгенерировать пароль указанной длины с учетом экранирования";
+      error = "Не удалось сгенерировать пароль указанной длины";
     }
   };
 
@@ -96,15 +84,6 @@
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
-  };
-
-  const escapeDockerSpecialChars = (str: string): string => {
-    return str
-      .replace(/\\/g, "\\\\")
-      .replace(/\$/g, "\\$")
-      .replace(/#/g, "\\#")
-      .replace(/"/g, '\\"')
-      .replace(/'/g, "\\'");
   };
 
   const copyToClipboard = () => {
@@ -129,7 +108,7 @@
     if (length > 100) length = 100;
   }
 
-  $: if (useCyrillic !== undefined || escapeForDocker !== undefined) {
+  $: if (useCyrillic !== undefined) {
     generatePassword();
   }
 
@@ -152,11 +131,6 @@
   $: if (includeSymbols || !includeSymbols) {
     generatePassword();
   }
-
-  $: if (!includeSymbols && escapeForDocker) {
-    escapeForDocker = false;
-  }
-
 </script>
 
 <div class="wrap">
@@ -210,12 +184,6 @@
             <span>!@#$%^&*</span>
           </label>
         </div>
-        <div class="option">
-          <label>
-            <input type="checkbox" bind:checked={escapeForDocker} />
-            <span>Для Docker</span>
-          </label>
-        </div>
       </div>
     </div>
     <button on:click={generatePassword} class="generate-button">
@@ -252,7 +220,7 @@
     align-items: center;
     margin-bottom: 1rem;
     width: 100%;
-    height: 48px; /* Фиксированная высота */
+    height: 48px;
     background: #2c2c2c;
     border-radius: 8px;
     border: 2px solid var(--toxic-green);
@@ -267,19 +235,18 @@
     font-size: clamp(1.2rem, 4vw, 1.8rem);
     color: var(--toxic-green);
     text-align: left;
-    white-space: nowrap; /* Однострочный текст */
-    overflow-x: hidden; /* Скрывает прокрутку по умолчанию */
-    text-overflow: ellipsis; /* Многоточие для длинного текста */
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
     background: #1a1a1a;
     letter-spacing: 0.1em;
-    line-height: 1; /* Фиксированная высота строки */
+    line-height: 1;
   }
 
   .password-text:hover {
     user-select: none;
   }
 
-  /* Стилизация скроллбара */
   .password-text::-webkit-scrollbar {
     height: 8px;
   }
@@ -297,7 +264,6 @@
     background: #00cc00;
   }
 
-  /* Для Firefox */
   .password-text {
     scrollbar-color: var(--toxic-green) #2c2c2c;
     scrollbar-width: thin;
@@ -328,7 +294,7 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap;
-    height: 100%; /* Соответствует высоте контейнера */
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -566,7 +532,7 @@
     }
 
     .password-display {
-      height: 40px; /* Уменьшенная высота для мобильных */
+      height: 40px;
     }
 
     .password-text {
