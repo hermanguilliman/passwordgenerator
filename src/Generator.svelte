@@ -7,7 +7,7 @@
   let includeNumbers: boolean = true;
   let includeSymbols: boolean = true;
   let useCyrillic: boolean = false;
-  let escapeForDocker: boolean = false; // Новая опция для экранирования
+  let escapeForDocker: boolean = false;
   let password: string = "";
   let error: string = "";
   let copied: boolean = false;
@@ -22,7 +22,7 @@
     const cyrillicLower = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
     const cyrillicUpper = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
     const numbers = "0123456789";
-    const symbols = "!@#$%^&*()_+[]{}|;:,.<>?"; // Убедитесь, что символы безопасны
+    const symbols = "!@#$%^&*()_+[]{}|;:,.<>?";
 
     let characters = "";
     if (includeLowercase)
@@ -41,7 +41,6 @@
     error = "";
     password = "";
 
-    // Ensure at least one character from each selected type
     if (includeLowercase)
       password += characters.charAt(
         Math.floor(
@@ -61,16 +60,13 @@
     if (includeSymbols)
       password += characters.charAt(Math.floor(Math.random() * symbols.length));
 
-    // Fill the rest of the password length with random characters
     for (let i = password.length; i < length; i++) {
       const randomIndex = Math.floor(Math.random() * characters.length);
       password += characters[randomIndex];
     }
 
-    // Shuffle the password to ensure randomness
     password = shuffleArray(password.split("")).join("");
 
-    // Экранирование для Docker, если включена опция
     if (escapeForDocker) {
       password = escapeDockerSpecialChars(password);
     }
@@ -85,15 +81,13 @@
     return shuffled;
   };
 
-  // Функция для экранирования специальных символов для Docker
   const escapeDockerSpecialChars = (str: string): string => {
-    // Экранируем $ и \, так как они имеют особое значение в Docker
     return str
-      .replace(/\\/g, "\\\\") // Экранируем обратный слэш
-      .replace(/\$/g, "\\$") // Экранируем знак доллара
-      .replace(/#/g, "\\#") // Экранируем # (для комментариев)
-      .replace(/"/g, '\\"') // Экранируем кавычки
-      .replace(/'/g, "\\'"); // Экранируем одинарные кавычки
+      .replace(/\\/g, "\\\\")
+      .replace(/\$/g, "\\$")
+      .replace(/#/g, "\\#")
+      .replace(/"/g, '\\"')
+      .replace(/'/g, "\\'");
   };
 
   const copyToClipboard = () => {
@@ -145,13 +139,16 @@
   $: if (!includeSymbols && escapeForDocker) {
     escapeForDocker = false;
   }
+
 </script>
 
 <div class="wrap">
   <div class="card">
-    Ваш новый пароль:
+    <p class="your-password-title">Ваш новый пароль</p>
     <div class="password-display">
-      <input type="text" value={password} readonly />
+      <div class="password-text" class:fade-in={password}>
+        {password || "Нажмите 'Сгенерировать пароль'"}
+      </div>
       <button on:click={copyToClipboard} class="copy-button" class:copied>
         {copied ? "Скопировано!" : "📋"}
       </button>
@@ -215,6 +212,7 @@
 
 <style>
   .card {
+    text-align: center;
     flex: 1;
     margin: 0 auto;
     background-color: var(--dark-background);
@@ -227,27 +225,80 @@
     font-size: clamp(2rem, 4vw, 1.5rem);
   }
 
-  .password-display {
-    display: flex;
-    margin-bottom: 1rem;
-    width: 100%;
-    font-size: clamp(1.5rem, 4vw, 1.5rem);
+  .your-password-title {
+    font-size: 2rem;
+    margin-bottom: 10pt;
   }
 
-  input[type="text"] {
-    font-family: "HandJet";
-    font-weight: 500;
-    background-color: #f5f5dc;
-    color: #000000 !important;
-    letter-spacing: 0.1em;
+  .password-display {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+    height: 48px; /* Фиксированная высота */
+    background: #2c2c2c;
+    border-radius: 8px;
+    border: 2px solid var(--toxic-green);
+    overflow: hidden;
+  }
+
+  .password-text {
     flex-grow: 1;
     padding: 0.75rem;
-    font-size: clamp(1.2rem, 5vw, 2.5rem);
-    border: 1px solid var(--toxic-green);
-    border-radius: 4px 0 0 4px;
-    width: 0;
-    min-width: 0;
-    overflow-x: auto;
+    font-family: "Handjet";
+    font-weight: 500;
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    color: var(--toxic-green);
+    text-align: left;
+    white-space: nowrap; /* Однострочный текст */
+    overflow-x: hidden; /* Скрывает прокрутку по умолчанию */
+    text-overflow: ellipsis; /* Многоточие для длинного текста */
+    background: #1a1a1a;
+    letter-spacing: 0.1em;
+    line-height: 1; /* Фиксированная высота строки */
+  }
+
+  .password-text:hover {
+    user-select: none;
+  }
+
+  /* Стилизация скроллбара */
+  .password-text::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .password-text::-webkit-scrollbar-track {
+    background: #2c2c2c;
+  }
+
+  .password-text::-webkit-scrollbar-thumb {
+    background: var(--toxic-green);
+    border-radius: 4px;
+  }
+
+  .password-text::-webkit-scrollbar-thumb:hover {
+    background: #00cc00;
+  }
+
+  /* Для Firefox */
+  .password-text {
+    scrollbar-color: var(--toxic-green) #2c2c2c;
+    scrollbar-width: thin;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .copy-button {
@@ -260,6 +311,10 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap;
+    height: 100%; /* Соответствует высоте контейнера */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .alphabet-switch {
@@ -363,7 +418,6 @@
   .options span {
     display: inline-block;
     width: 2.5em;
-    /* Ширина для мобильных устройств */
     text-align: center;
   }
 
@@ -391,19 +445,39 @@
   }
 
   input[type="checkbox"] {
-    accent-color: var(--toxic-green);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     margin: 0;
+    border-radius: 10px;
     cursor: pointer;
     width: 1.2em;
     height: 1.2em;
+    background-color: var(--toxic-green-dark);
+    border: 2px solid var(--toxic-green);
+    position: relative;
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: var(--toxic-green);
+  }
+
+  input[type="checkbox"]:checked::after {
+    content: "✔";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: black;
+    font-size: 0.8em;
   }
 
   input[type="range"] {
     flex: 1;
     min-width: 0;
-    appearance: none; /* Стандартное свойство */
-    -webkit-appearance: none; /* Для WebKit браузеров */
-    -moz-appearance: none; /* Для Firefox */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     width: 100%;
     height: 10px;
     background: var(--toxic-green-dark);
@@ -421,7 +495,6 @@
     cursor: pointer;
   }
 
-  /* Стили для ползунка в Firefox */
   input[type="range"]::-moz-range-thumb {
     width: 20px;
     height: 20px;
@@ -432,7 +505,7 @@
   }
 
   .generate-button {
-    font-family: "HandJet";
+    font-family: "Handjet";
     width: 100%;
     padding: 0.75rem;
     font-size: clamp(1.2rem, 5vw, 2rem);
@@ -451,9 +524,8 @@
   .error {
     font-family: "Handjet";
     font-weight: 700;
-    font-size: 25pt;
-    color: #d32f2f;
     font-size: 20pt;
+    color: #d32f2f;
     margin-top: 1rem;
     text-align: center;
     word-wrap: break-word;
@@ -476,10 +548,13 @@
       margin-bottom: 0.25rem;
     }
 
-    input[type="text"] {
-      font-size: clamp(1rem, 5vw, 1.8rem);
+    .password-display {
+      height: 40px; /* Уменьшенная высота для мобильных */
+    }
+
+    .password-text {
+      font-size: clamp(1rem, 4vw, 1.5rem);
       padding: 0.5rem;
-      color: #000000 !important;
     }
 
     .copy-button {
@@ -508,31 +583,8 @@
       width: 45px;
     }
 
-    input:checked + .slider:before {
+    .switch input:checked + .slider:before {
       transform: translateX(90px);
-    }
-  }
-.checkbox-options {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-top: 1rem;
-  }
-
-  .checkbox-options .option {
-    flex: 0 1 auto;
-    min-width: 80px;
-    margin: 0;
-  }
-
-  @media (max-width: 1000px) {
-    .checkbox-options {
-      flex-direction: column;
-    }
-
-    .checkbox-options .option {
-      width: 100%;
     }
   }
 </style>
