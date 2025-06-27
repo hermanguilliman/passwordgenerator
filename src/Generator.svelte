@@ -39,36 +39,53 @@
     }
 
     error = "";
-    password = "";
+    let attempts = 0;
+    const maxAttempts = 100; // Ограничение на количество попыток
 
-    if (includeLowercase)
-      password += characters.charAt(
-        Math.floor(
-          Math.random() *
-            (useCyrillic ? cyrillicLower.length : latinLower.length)
-        )
-      );
-    if (includeUppercase)
-      password += characters.charAt(
-        Math.floor(
-          Math.random() *
-            (useCyrillic ? cyrillicUpper.length : latinUpper.length)
-        )
-      );
-    if (includeNumbers)
-      password += characters.charAt(Math.floor(Math.random() * numbers.length));
-    if (includeSymbols)
-      password += characters.charAt(Math.floor(Math.random() * symbols.length));
+    do {
+      password = "";
+      attempts++;
 
-    for (let i = password.length; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      password += characters[randomIndex];
-    }
+      // Гарантировать наличие хотя бы одного символа каждого выбранного типа
+      if (includeLowercase)
+        password += characters.charAt(
+          Math.floor(
+            Math.random() *
+              (useCyrillic ? cyrillicLower.length : latinLower.length)
+          )
+        );
+      if (includeUppercase)
+        password += characters.charAt(
+          Math.floor(
+            Math.random() *
+              (useCyrillic ? cyrillicUpper.length : latinUpper.length)
+          )
+        );
+      if (includeNumbers)
+        password += characters.charAt(Math.floor(Math.random() * numbers.length));
+      if (includeSymbols)
+        password += characters.charAt(Math.floor(Math.random() * symbols.length));
 
-    password = shuffleArray(password.split("")).join("");
+      // Добавить случайные символы до достижения нужной длины
+      for (let i = password.length; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        password += characters[randomIndex];
+      }
 
-    if (escapeForDocker) {
-      password = escapeDockerSpecialChars(password);
+      // Перемешать пароль
+      password = shuffleArray(password.split("")).join("");
+
+      // Применить экранирование, если включено
+      if (escapeForDocker) {
+        password = escapeDockerSpecialChars(password);
+      }
+
+      // Проверить длину и повторить, если она не совпадает
+    } while (password.length !== length && attempts < maxAttempts);
+
+    // Если не удалось сгенерировать пароль нужной длины
+    if (password.length !== length) {
+      error = "Не удалось сгенерировать пароль указанной длины с учетом экранирования";
     }
   };
 
