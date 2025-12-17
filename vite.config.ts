@@ -1,7 +1,34 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [
+    svelte(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      manifest: {
+        name: 'Guilliman Password Generator',
+        short_name: 'PassGen',
+        description: 'Cyberpunk Password Generator',
+        theme_color: '#9ef523',
+        background_color: '#000000',
+        display: 'standalone',
+        icons: [
+          {
+            src: 'pwa-192x192.png', // Убедитесь, что иконки есть в public/
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      }
+    })
+  ],
 })
