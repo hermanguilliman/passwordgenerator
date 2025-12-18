@@ -644,10 +644,10 @@
                             <span class="switch-track">
                                 <span class="switch-thumb"></span>
                                 <span class="label-off"
-                                    >ЛАТИНИЦА [{LATIN_LOWER.length * 2}]</span
+                                    >LAT [{LATIN_LOWER.length * 2}]</span
                                 >
                                 <span class="label-on"
-                                    >КИРИЛЛИЦА [{CYRILLIC_LOWER.length *
+                                    >КИР [{CYRILLIC_LOWER.length *
                                         2}]</span
                                 >
                             </span>
