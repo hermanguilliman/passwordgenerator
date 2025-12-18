@@ -1,26 +1,30 @@
 <script>
-  let currentYear = new Date().getFullYear();
+    let currentYear = new Date().getFullYear();
 </script>
 
 <footer>
-  <p>Guilliman © {currentYear}</p>
+    <div class="line"></div>
+    <p>Guilliman // G-PASS TERMINAL v2.0 // {currentYear}</p>
 </footer>
 
 <style>
-  footer {
-    font-family: "HandJet";
-    font-weight: 500;
-    font-size: 20pt;
-    width: 100%;
-    background-color: #1a1a1a;
-    color: #545454;
-    padding: 1rem;
-    text-align: center;
-    margin-top: auto;
-    position: relative;
-    box-sizing: border-box;
-  }
-  footer p {
-    margin: 0;
-  }
+    footer {
+        font-family: var(--font-main);
+        font-size: 1rem;
+        width: 100%;
+        color: #444;
+        padding: 1rem;
+        text-align: center;
+        margin-top: auto;
+    }
+    .line {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #333, transparent);
+        margin-bottom: 0.5rem;
+    }
+    footer p {
+        margin: 0;
+        letter-spacing: 2px;
+    }
 </style>

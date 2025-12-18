@@ -6,7 +6,7 @@
     let mode: "standard" | "xkcd" = "standard";
 
     // Standard Mode Vars
-    let length: number = 15;
+    let length: number = 16;
     let includeLowercase: boolean = true;
     let includeUppercase: boolean = true;
     let includeNumbers: boolean = true;
@@ -24,120 +24,30 @@
     let error: string = "";
     let copied: boolean = false;
     let history: string[] = [];
-    let showHistory: boolean = false;
     let showQR: boolean = false;
     let qrCanvas: HTMLCanvasElement;
 
     // Энтропия
     let entropyBits: number = 0;
     let entropyColor: string = "var(--toxic-green)";
-    let entropyLabel: string = "Низкая";
-
-    // Словарь для XKCD
-    const ENGLISH_WORDS = [
-        "correct",
-        "horse",
-        "battery",
-        "staple",
-        "house",
-        "table",
-        "chair",
-        "pencil",
-        "purple",
-        "monkey",
-        "dishwasher",
-        "absolute",
-        "jungle",
-        "crypto",
-        "network",
-        "shadow",
-        "system",
-        "neural",
-        "link",
-        "matrix",
-        "ghost",
-        "shell",
-        "cyber",
-        "punk",
-        "neon",
-        "laser",
-        "future",
-        "chrome",
-        "data",
-        "access",
-        "denied",
-        "granted",
-        "protocol",
-        "bunker",
-        "vector",
-        "pixel",
-        "grid",
-        "node",
-        "signal",
-        "router",
-        "server",
-        "cloud",
-        "storm",
-        "rain",
-        "blade",
-        "runner",
-        "android",
-        "electric",
-        "dream",
-        "sheep",
-        "logic",
-        "memory",
-        "core",
-        "virus",
-        "trojan",
-        "firewall",
-        "proxy",
-        "token",
-        "chain",
-        "block",
-        "cipher",
-        "hash",
-        "salt",
-        "key",
-        "public",
-        "private",
-        "tunnel",
-        "bridge",
-        "gate",
-        "star",
-        "wars",
-        "trek",
-        "space",
-        "ship",
-        "planet",
-        "moon",
-        "mars",
-        "jupiter",
-        "orbit",
-        "gravity",
-    ];
-
+    let entropyLabel: string = "НИЗКАЯ";
+    let entropyPercent: number = 0;
+    const WORD_SOURCE =
+        "correct horse battery staple system hacking cyber neural matrix logic ghost shell neon laser future data access denied granted protocol bunker vector pixel grid node signal router server cloud storm rain blade runner android electric dream sheep memory core virus trojan firewall proxy token chain block cipher hash salt key public private tunnel bridge gate star wars orbit gravity quantum physics plasma void galaxy nebula cosmos alien signal radio frequency bandwidth analog digital binary hex code script python rust java linux unix kernel root sudo admin user guest login logout abort retry fail error warning debug stack heap queue array list graph tree forest swamp mountain river ocean city tokyo night rain street car bike drone robot mech armor weapon shield sword magic mana health power energy fusion nuclear atomic orbit flight space ship pilot drive warp speed light sound sonic wave pulse beat rhythm bass synth drums guitar voice text chat bot ai learning deep mining crypto money cash credit debit bank vault safe lock pick door wall floor roof window glass steel iron copper gold silver bronze metal alloy carbon silicon fiber optic lens camera eye vision sight sound ear hear listen speak talk voice shout whisper secret hidden dark black white red green blue cyan magenta yellow orange purple violet indigo ultraviolet infrared gamma xray radio microwave radar sonar lidar sensor motor engine gear wheel cog piston pump valve pipe tube wire cable circuit chip board card slot port socket jack plug connect disconnect online offline remote local host domain dns ip tcp udp http ssh ftp smtp pop imap sql db query request response header body footer tag element attribute value variable function class object method property event loop scope closure promise async await sync thread process task job worker service daemon cron time date year month day hour minute second millisecond nano pico femto atto zepto yocto mega giga tera peta exa zetta yotta alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega zero one two three four five six seven eight nine ten hundred thousand million billion trillion infinite finite limit integral derivative vector scalar tensor matrix fract chaos entropy energy force mass acceleration velocity speed distance time space dimension universe multiverse string theory relativity gravity electromagnetic weak strong interaction boson fermion lepton quark gluon photon graviton higgs field wave particle duality uncertainty principle evolution mutation selection dna rna gene cell tissue organ body brain heart lung liver kidney stomach skin bone blood nerve neuron synapse axon dendrite receptor hormone enzyme protein lipid sugar carb vitamin mineral water air fire earth wind spirit soul mind thought idea concept meme culture art music sound video image picture photo graph chart map plan design build create destroy fix break hack slash crash burn freeze melt boil evaporate condense sublimate solid liquid gas plasma state phase transition entropy thermodynamics mechanics optics acoustics electronics robotics bionics genetics genomics proteomics informatics cybernetics systems control automation intelligence wisdom knowledge data information communication network internet web site page link url uri urn uuid guid hash md5 sha rsa dsa ecc aes des blowfish twofish serpent idea cast rc4 rc5 rc6 seal wake";
+    const ENGLISH_WORDS = WORD_SOURCE.split(" ");
     onMount(() => {
         loadHistory();
         generate();
     });
 
     const handleBackdropClick = (e: MouseEvent) => {
-        // e.target — элемент, по которому кликнули
-        // e.currentTarget — элемент, на котором висит обработчик (наш backdrop)
-        // Если они совпадают, значит кликнули в черную область, а не в модалку
-        if (e.target === e.currentTarget) {
-            closeQR();
-        }
+        if (e.target === e.currentTarget) closeQR();
     };
-    // --- Логика Генерации ---
 
+    // --- Логика ---
     const generate = () => {
-        if (mode === "standard") {
-            generateStandard();
-        } else {
-            generateXKCD();
-        }
+        if (mode === "standard") generateStandard();
+        else generateXKCD();
         calculateEntropy();
     };
 
@@ -158,12 +68,13 @@
         if (includeSymbols) characters += symbols;
 
         if (characters.length === 0) {
-            error = "Выберите типы символов";
+            error = "ОШИБКА: НЕТ СИМВОЛОВ";
             return;
         }
         error = "";
 
         let tempPwd = "";
+        // Гарантируем наличие выбранных типов
         if (includeLowercase)
             tempPwd += getRandomChar(useCyrillic ? cyrillicLower : latinLower);
         if (includeUppercase)
@@ -187,19 +98,14 @@
             if (capitalizeXKCD) w = w.charAt(0).toUpperCase() + w.slice(1);
             words.push(w);
         }
-
         let pwd = words.join(separator);
-
-        if (includeNumberXKCD) {
+        if (includeNumberXKCD)
             pwd += separator + Math.floor(Math.random() * 100);
-        }
 
         password = pwd;
         error = "";
         addToHistory(password);
     };
-
-    // --- Утилиты ---
 
     const getRandomChar = (str: string) =>
         str.charAt(Math.floor(Math.random() * str.length));
@@ -213,8 +119,6 @@
         return arr.join("");
     };
 
-    // --- Энтропия ---
-
     const calculateEntropy = () => {
         if (!password) {
             entropyBits = 0;
@@ -223,48 +127,77 @@
 
         let poolSize = 0;
         if (mode === "standard") {
+            // Стандартный режим (тут без изменений)
             if (includeLowercase) poolSize += useCyrillic ? 33 : 26;
             if (includeUppercase) poolSize += useCyrillic ? 33 : 26;
             if (includeNumbers) poolSize += 10;
             if (includeSymbols) poolSize += 24;
-            entropyBits = Math.floor(
-                password.length * Math.log2(poolSize || 1)
-            );
+
+            if (poolSize === 0) {
+                entropyBits = 0;
+            } else {
+                entropyBits = Math.floor(password.length * Math.log2(poolSize));
+            }
         } else {
+            // XKCD Режим
+            // 1. Энтропия слов: кол-во слов * log2(размера_словаря)
+            // Словарь теперь ~460 слов, log2(460) ≈ 8.84 бита на слово
             let wordEntropy = Math.log2(ENGLISH_WORDS.length);
+
+            // 2. Энтропия разделителя (если их несколько на выбор, но у нас пользователь выбирает один конкретный,
+            // поэтому с точки зрения взломщика, если он знает формат, энтропия разделителя = 0.
+            // Однако, если мы считаем "стойкость пароля в вакууме", разделитель увеличивает длину.
+            // Но правильно считать энтропию именно выбора слов).
             entropyBits = Math.floor(wordCount * wordEntropy);
-            if (includeNumberXKCD) entropyBits += Math.floor(Math.log2(100));
+
+            // 3. Число в конце (0-99) добавляет log2(100) ≈ 6.64 бита
+            if (includeNumberXKCD) {
+                entropyBits += Math.floor(Math.log2(100));
+            }
+
+            // 4. Заглавные буквы.
+            // В текущей реализации мы либо делаем ВСЕ заглавными, либо нет.
+            // Это не добавляет энтропии (взломщик просто проверяет два варианта).
+            // Поэтому тут мы ничего не плюсуем.
         }
 
-        if (entropyBits < 40) {
-            entropyColor = "#ff0033";
-            entropyLabel = "Слабый";
-        } else if (entropyBits < 70) {
+        // Обновляем визуализацию
+        // Шкала до 128 бит
+        entropyPercent = Math.min(entropyBits, 128);
+
+        // Градации безопасности
+        if (entropyBits < 45) {
+            entropyColor = "#ff3333";
+            entropyLabel = "СЛАБЫЙ";
+        } else if (entropyBits < 65) {
             entropyColor = "#ffff00";
-            entropyLabel = "Норм";
+            entropyLabel = "СРЕДНИЙ";
+        } else if (entropyBits < 90) {
+            // 90 бит - это очень хорошо
+            entropyColor = "#9ef523";
+            entropyLabel = "НАДЕЖНЫЙ";
         } else {
-            entropyColor = "#00ff00";
-            entropyLabel = "Надежный";
+            // > 90 бит - параноидальный уровень
+            entropyColor = "#00ffff"; // Голубой цвет (Cyan) для супер-защиты
+            entropyLabel = "УЛЬТРА";
         }
     };
 
     // --- История ---
-
     const addToHistory = (pwd: string) => {
         if (history.length > 0 && history[0] === pwd) return;
-        history = [pwd, ...history].slice(0, 10);
+        history = [pwd, ...history].slice(0, 20); // Увеличил лимит до 20
         localStorage.setItem("pwd_history", JSON.stringify(history));
     };
 
     const loadHistory = () => {
         const stored = localStorage.getItem("pwd_history");
-        if (stored) {
+        if (stored)
             try {
                 history = JSON.parse(stored);
             } catch (e) {
                 console.error(e);
             }
-        }
     };
 
     const restoreFromHistory = (pwd: string) => {
@@ -273,8 +206,12 @@
         copyToClipboard();
     };
 
-    // --- Действия ---
+    const clearHistory = () => {
+        history = [];
+        localStorage.removeItem("pwd_history");
+    };
 
+    // --- Действия ---
     const copyToClipboard = () => {
         if (!password) return;
         navigator.clipboard
@@ -283,7 +220,7 @@
                 copied = true;
                 setTimeout(() => (copied = false), 2000);
             })
-            .catch(() => (error = "Ошибка копирования"));
+            .catch(() => (error = "Ошибка буфера"));
     };
 
     const generateQR = async () => {
@@ -295,12 +232,12 @@
                 qrCanvas,
                 password,
                 {
-                    width: 200,
+                    width: 240,
                     margin: 2,
                     color: { dark: "#000000", light: "#9ef523" },
                 },
-                function (error) {
-                    if (error) console.error(error);
+                (e) => {
+                    if (e) console.error(e);
                 }
             );
         }
@@ -310,94 +247,114 @@
         showQR = false;
     };
 
-    const handleBackdropKeydown = (e: KeyboardEvent) => {
-        if (e.key === "Escape" || e.key === "Enter") {
-            closeQR();
-        }
-    };
-
-    // Реактивность для перегенерации
-    $: if (
-        mode === "standard" &&
-        (length || useCyrillic !== undefined || includeLowercase !== undefined)
-    ) {
-        // Опционально: авто-генерация при смене параметров (можно убрать, если мешает)
-    }
+    // Авто-генерация при изменении чекбоксов (не ползунков)
+    const handleOptionChange = () => generate();
 </script>
 
-<div class="wrap">
-    <div class="card">
-        <div class="tabs">
-            <button
-                class:active={mode === "standard"}
-                on:click={() => {
-                    mode = "standard";
-                    generate();
-                }}>Символы</button
-            >
-            <button
-                class:active={mode === "xkcd"}
-                on:click={() => {
-                    mode = "xkcd";
-                    generate();
-                }}>XKCD Фраза</button
-            >
-        </div>
-
-        <!-- Дисплей Пароля -->
-        <div class="password-display">
-            <div class="password-text" class:fade-in={password}>
-                {password || "..."}
+<div class="cyber-container">
+    <!-- Панель Генератора -->
+    <div class="panel main-panel">
+        <div class="panel-header">
+            <div class="tabs">
+                <button
+                    class:active={mode === "standard"}
+                    on:click={() => {
+                        mode = "standard";
+                        generate();
+                    }}
+                >
+                    [ СТАНДАРТ ]
+                </button>
+                <button
+                    class:active={mode === "xkcd"}
+                    on:click={() => {
+                        mode = "xkcd";
+                        generate();
+                    }}
+                >
+                    [ В СТИЛЕ XKCD ]
+                </button>
             </div>
-            <button
-                on:click={copyToClipboard}
-                class="copy-button"
-                class:copied
-                aria-label="Скопировать пароль"
-            >
-                {copied ? "OK!" : "📋"}
-            </button>
+            <div
+                class="status-light"
+                style="background: {entropyColor}; box-shadow: 0 0 10px {entropyColor}"
+            ></div>
         </div>
 
-        <!-- Энтропия -->
-        <div class="entropy-container">
-            <div class="entropy-bar">
+        <!-- Дисплей -->
+        <div class="display-section">
+            <div class="password-display-wrapper">
+                <div class="password-label">СГЕНЕРИРОВАННЫЙ ПАРОЛЬ:</div>
+                <div class="password-field" class:pulse={copied}>
+                    {password || "INITIALIZING..."}
+                </div>
+                <div class="actions">
+                    <button
+                        class="action-btn copy"
+                        on:click={copyToClipboard}
+                        class:success={copied}
+                    >
+                        {copied ? "СКОПИРОВАНО" : "КОПИРОВАТЬ"}
+                    </button>
+                    <button
+                        class="action-btn qr"
+                        on:click={generateQR}
+                        title="QR Code">QR</button
+                    >
+                    <button
+                        class="action-btn refresh"
+                        on:click={generate}
+                        title="Обновить">↻</button
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Индикатор Энтропии -->
+        <div class="entropy-bar-container">
+            <div class="entropy-meta">
+                <span>БЕЗОПАСНОСТЬ: {entropyLabel}</span>
+                <span>{entropyBits} BITS</span>
+            </div>
+            <div class="entropy-track">
                 <div
-                    class="fill"
-                    style="width: {Math.min(
-                        entropyBits,
-                        128
-                    )}%; background-color: {entropyColor}; box-shadow: 0 0 10px {entropyColor}"
+                    class="entropy-fill"
+                    style="width: {entropyPercent /
+                        1.28}%; background: {entropyColor}; box-shadow: 0 0 8px {entropyColor}"
                 ></div>
-            </div>
-            <div class="entropy-info">
-                <span>{entropyBits} bits</span>
-                <span style="color: {entropyColor}">{entropyLabel}</span>
+                <!-- Маркеры сетки -->
+                {#each Array(10) as _, i}
+                    <div class="grid-line" style="left: {i * 10}%"></div>
+                {/each}
             </div>
         </div>
 
         <!-- Настройки -->
-        {#if mode === "standard"}
-            <div class="alphabet-switch">
-                <label class="switch">
-                    <input
-                        type="checkbox"
-                        bind:checked={useCyrillic}
-                        on:change={generate}
-                    />
-                    <span class="slider">
-                        <span class="latin">ABC</span>
-                        <span class="cyrillic">АБВ</span>
-                    </span>
-                </label>
-            </div>
+        <div class="settings-grid">
+            {#if mode === "standard"}
+                <!-- Кириллица Переключатель -->
+                <div class="setting-row full-width cyrillic-switch">
+                    <label class="switch-container">
+                        <input
+                            type="checkbox"
+                            bind:checked={useCyrillic}
+                            on:change={handleOptionChange}
+                        />
+                        <span class="switch-track">
+                            <span class="switch-thumb"></span>
+                            <span class="label-off">LAT</span>
+                            <span class="label-on">CYR</span>
+                        </span>
+                    </label>
+                </div>
 
-            <div class="options">
-                <div class="option full-width">
-                    <label for="length-range">Длина: {length}</label>
-                    <!-- Добавлен id и связан с label -->
+                <!-- Длина -->
+                <div class="setting-row full-width slider-row">
+                    <label for="len"
+                        >ДЛИНА: <span class="val">{length}</span></label
+                    >
                     <input
-                        id="length-range"
+                        id="len"
                         type="range"
                         bind:value={length}
                         min="4"
@@ -406,53 +363,58 @@
                     />
                 </div>
 
-                <div class="checkbox-options">
-                    <div class="option">
-                        <label
-                            ><input
-                                type="checkbox"
-                                bind:checked={includeLowercase}
-                                on:change={generate}
-                            /><span>{useCyrillic ? "а-я" : "a-z"}</span></label
+                <!-- Чекбоксы -->
+                <div class="checkbox-grid">
+                    <label class="cyber-check">
+                        <input
+                            type="checkbox"
+                            bind:checked={includeLowercase}
+                            on:change={handleOptionChange}
+                        />
+                        <span class="check-box"></span>
+                        <span class="check-label"
+                            >{useCyrillic ? "строчные" : "a-z"}</span
                         >
-                    </div>
-                    <div class="option">
-                        <label
-                            ><input
-                                type="checkbox"
-                                bind:checked={includeUppercase}
-                                on:change={generate}
-                            /><span>{useCyrillic ? "А-Я" : "A-Z"}</span></label
+                    </label>
+                    <label class="cyber-check">
+                        <input
+                            type="checkbox"
+                            bind:checked={includeUppercase}
+                            on:change={handleOptionChange}
+                        />
+                        <span class="check-box"></span>
+                        <span class="check-label"
+                            >{useCyrillic ? "ЗАГЛАВНЫЕ" : "A-Z"}</span
                         >
-                    </div>
-                    <div class="option">
-                        <label
-                            ><input
-                                type="checkbox"
-                                bind:checked={includeNumbers}
-                                on:change={generate}
-                            /><span>0-9</span></label
-                        >
-                    </div>
-                    <div class="option">
-                        <label
-                            ><input
-                                type="checkbox"
-                                bind:checked={includeSymbols}
-                                on:change={generate}
-                            /><span>!@#</span></label
-                        >
-                    </div>
+                    </label>
+                    <label class="cyber-check">
+                        <input
+                            type="checkbox"
+                            bind:checked={includeNumbers}
+                            on:change={handleOptionChange}
+                        />
+                        <span class="check-box"></span>
+                        <span class="check-label">0-9</span>
+                    </label>
+                    <label class="cyber-check">
+                        <input
+                            type="checkbox"
+                            bind:checked={includeSymbols}
+                            on:change={handleOptionChange}
+                        />
+                        <span class="check-box"></span>
+                        <span class="check-label">!@#</span>
+                    </label>
                 </div>
-            </div>
-        {:else}
-            <!-- XKCD Настройки -->
-            <div class="options" style="margin-top: 20px;">
-                <div class="option full-width">
-                    <label for="word-count-range">Слов: {wordCount}</label>
-                    <!-- Добавлен id и связан с label -->
+            {:else}
+                <!-- XKCD Настройки -->
+                <div class="setting-row full-width slider-row">
+                    <label for="wc"
+                        >КОЛИЧЕСТВО СЛОВ: <span class="val">{wordCount}</span
+                        ></label
+                    >
                     <input
-                        id="word-count-range"
+                        id="wc"
                         type="range"
                         bind:value={wordCount}
                         min="3"
@@ -460,550 +422,599 @@
                         on:input={generate}
                     />
                 </div>
-                <div class="option">
-                    <label for="separator-select">Разделитель:</label>
-                    <!-- Добавлен id и связан с label -->
+
+                <div class="setting-row full-width">
+                    <label for="sep">РАЗДЕЛИТЕЛЬ</label>
                     <select
-                        id="separator-select"
+                        id="sep"
                         bind:value={separator}
                         on:change={generate}
                         class="cyber-select"
                     >
-                        <option value="-">-</option>
-                        <option value="_">_</option>
-                        <option value=".">.</option>
-                        <option value=" ">Пробел</option>
+                        <option value="-">ТИРЕ (-)</option>
+                        <option value="_">НИЖНЕЕ ПОДЧЕРКИВАНИЕ (_)</option>
+                        <option value=".">ТОЧКА (.)</option>
+                        <option value=" ">ПРОБЕЛ</option>
                     </select>
                 </div>
-                <div class="checkbox-options">
-                    <div class="option">
-                        <label
-                            ><input
-                                type="checkbox"
-                                bind:checked={capitalizeXKCD}
-                                on:change={generate}
-                            /><span>Заглавные</span></label
-                        >
-                    </div>
-                    <div class="option">
-                        <label
-                            ><input
-                                type="checkbox"
-                                bind:checked={includeNumberXKCD}
-                                on:change={generate}
-                            /><span>Число</span></label
-                        >
-                    </div>
-                </div>
-            </div>
-        {/if}
 
-        <div class="action-buttons">
-            <button on:click={generate} class="generate-button primary">
-                СГЕНЕРИРОВАТЬ
-            </button>
-            <button
-                on:click={generateQR}
-                class="generate-button icon-btn"
-                title="QR Код"
-                aria-label="Показать QR код"
-            >
-                QR
-            </button>
-        </div>
-
-        <!-- История -->
-        <div class="history-section">
-            <button
-                class="history-toggle"
-                on:click={() => (showHistory = !showHistory)}
-            >
-                {showHistory ? "▼" : "▶"} SYSTEM LOG ({history.length})
-            </button>
-            {#if showHistory}
-                <div class="history-list">
-                    {#each history as item, i}
-                        <button
-                            class="history-item"
-                            on:click={() => restoreFromHistory(item)}
-                        >
-                            <span class="history-index">[{i + 1}]</span>
-                            <span class="history-pwd">{item}</span>
-                        </button>
-                    {/each}
+                <div class="checkbox-grid">
+                    <label class="cyber-check">
+                        <input
+                            type="checkbox"
+                            bind:checked={capitalizeXKCD}
+                            on:change={handleOptionChange}
+                        />
+                        <span class="check-box"></span>
+                        <span class="check-label">Заглавные</span>
+                    </label>
+                    <label class="cyber-check">
+                        <input
+                            type="checkbox"
+                            bind:checked={includeNumberXKCD}
+                            on:change={handleOptionChange}
+                        />
+                        <span class="check-box"></span>
+                        <span class="check-label">Число в конце</span>
+                    </label>
                 </div>
             {/if}
         </div>
+
+        {#if error}
+            <div class="error-msg">⚠ {error}</div>
+        {/if}
+
+        <button class="big-gen-btn" on:click={generate}>
+            СГЕНЕРИРОВАТЬ КОД
+        </button>
     </div>
 
-    {#if error}
-        <p class="error">{error}</p>
-    {/if}
-
-    <!-- Модалка QR: Исправлена доступность -->
-    {#if showQR}
-        <div
-            class="modal-backdrop"
-            role="button"
-            tabindex="0"
-            on:click={handleBackdropClick}
-            on:keydown={handleBackdropKeydown}
-            aria-label="Закрыть модальное окно"
-        >
-            <!-- 
-            Убрали on:click|stopPropagation.
-            tabindex="-1" остался, чтобы элемент мог принимать фокус (role="dialog").
-            Теперь Svelte не будет ругаться, так как здесь нет обработчиков мыши.
-        -->
-            <div class="modal" role="dialog" aria-modal="true" tabindex="-1">
-                <h3>Scan Me</h3>
-                <canvas bind:this={qrCanvas}></canvas>
-                <button class="close-btn" on:click={closeQR}>Закрыть</button>
-            </div>
+    <!-- Панель Истории -->
+    <div class="panel history-panel">
+        <div class="panel-header">
+            <h3>ЛОГ ПАРОЛЕЙ ({history.length})</h3>
+            {#if history.length > 0}
+                <button class="clear-btn" on:click={clearHistory}
+                    >ОЧИСТКА</button
+                >
+            {/if}
         </div>
-    {/if}
+        <div class="history-list">
+            {#each history as item, i}
+                <button
+                    class="log-entry"
+                    on:click={() => restoreFromHistory(item)}
+                >
+                    <span class="log-time"
+                        >[{i < 9 ? "0" + (i + 1) : i + 1}]</span
+                    >
+                    <span class="log-data">{item}</span>
+                </button>
+            {/each}
+            {#if history.length === 0}
+                <div class="empty-log">NO DATA</div>
+            {/if}
+        </div>
+    </div>
 </div>
 
+<!-- Модалка -->
+{#if showQR}
+    <div
+        class="modal-backdrop"
+        on:click={handleBackdropClick}
+        role="button"
+        tabindex="0"
+        on:keydown={(e) => e.key === "Escape" && closeQR()}
+    >
+        <div class="modal">
+            <div class="modal-header">QR ACCESS</div>
+            <canvas bind:this={qrCanvas}></canvas>
+            <button class="close-btn" on:click={closeQR}>ЗАКРЫТЬ</button>
+        </div>
+    </div>
+{/if}
+
 <style>
-    /* Основные стили */
+    /* CSS Grid Layout */
+    .cyber-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    /* На больших экранах история справа */
+    @media (min-width: 900px) {
+        .cyber-container {
+            grid-template-columns: 2fr 1fr;
+            align-items: start;
+        }
+        .history-panel {
+            max-height: 600px; /* Фикс высота для десктопа */
+            position: sticky;
+            top: 1rem;
+        }
+    }
+
+    /* Panels */
+    .panel {
+        background: rgba(15, 15, 15, 0.9);
+        border: 1px solid var(--toxic-green);
+        padding: 1.5rem;
+        position: relative;
+        box-shadow: 0 0 15px rgba(158, 245, 35, 0.1);
+    }
+    .panel::after {
+        content: "";
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        width: 15px;
+        height: 15px;
+        border-right: 2px solid var(--toxic-green);
+        border-bottom: 2px solid var(--toxic-green);
+    }
+    .panel::before {
+        content: "";
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        width: 15px;
+        height: 15px;
+        border-left: 2px solid var(--toxic-green);
+        border-top: 2px solid var(--toxic-green);
+    }
+
+    /* Tabs */
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px dashed var(--toxic-green-dark);
+        padding-bottom: 0.5rem;
+    }
     .tabs {
         display: flex;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid var(--toxic-green-dark);
+        gap: 1rem;
     }
     .tabs button {
-        flex: 1;
-        background: none;
+        background: transparent;
         border: none;
         color: #555;
-        font-family: "Handjet";
-        font-size: 1.5rem;
+        font-family: var(--font-main); /* Используем переменную */
+        font-weight: 700;
         cursor: pointer;
-        padding: 0.5rem;
-        transition: all 0.3s;
+        transition: 0.2s;
+        padding: 0;
     }
     .tabs button.active {
         color: var(--toxic-green);
-        background: rgba(158, 245, 35, 0.1);
-        border-bottom: 2px solid var(--toxic-green);
+        text-shadow: 0 0 5px var(--toxic-green-dim);
+    }
+    .status-light {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #333;
     }
 
-    .entropy-container {
+    /* Password Display */
+    .display-section {
         margin-bottom: 1.5rem;
     }
-    .entropy-bar {
-        height: 6px;
-        background: #333;
-        border-radius: 3px;
-        overflow: hidden;
+    .password-label {
+        font-size: 0.8rem;
+        color: #777;
         margin-bottom: 4px;
     }
-    .entropy-bar .fill {
-        height: 100%;
-        transition:
-            width 0.5s ease,
-            background-color 0.5s ease;
-    }
-    .entropy-info {
+    .password-field {
+        background: #000;
+        border: 2px solid var(--toxic-green);
+        color: var(--toxic-green);
+        padding: 1rem;
+        font-size: clamp(1rem, 3.5vw, 1.6rem); /* Было 1.2rem - 2rem */
+        font-family: var(--font-main);
+        font-weight: 700; /* Делаем сам пароль жирнее */
+        letter-spacing: -0.5px; /* Чуть плотнее, так как моноширинный шрифт широкий */
+        word-break: break-all;
+        min-height: 3rem;
         display: flex;
-        justify-content: space-between;
-        font-size: 1rem;
-        color: #777;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        box-shadow: inset 0 0 10px rgba(158, 245, 35, 0.2);
+    }
+    .password-field.pulse {
+        animation: textPulse 0.5s ease-in-out;
+        background: var(--toxic-green);
+        color: #000;
+    }
+    @keyframes textPulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+        100% {
+            opacity: 1;
+        }
     }
 
-    .action-buttons {
-        display: flex;
+    .actions {
+        display: grid;
+        grid-template-columns: 3fr 1fr 1fr;
         gap: 10px;
     }
-    .generate-button.primary {
-        flex-grow: 1;
-    }
-    .generate-button.icon-btn {
-        width: 60px;
-    }
-
-    .cyber-select {
-        background: var(--dark-background);
-        color: var(--toxic-green);
+    .action-btn {
+        background: var(--toxic-green-dark);
         border: 1px solid var(--toxic-green);
-        font-family: "Handjet";
-        font-size: 1.2rem;
-        padding: 0 10px;
-        height: 30px;
-        border-radius: 4px;
-    }
-
-    /* History */
-    .history-section {
-        margin-top: 1.5rem;
-        border-top: 1px dashed var(--toxic-green); /* Пунктирная линия как в чеке/логе */
-        padding-top: 0.5rem;
-        width: 100%;
-    }
-
-    .history-toggle {
-        background: none;
-        border: none;
-        color: #777;
-        font-family: "Handjet";
-        cursor: pointer;
-        width: 100%;
-        text-align: left;
-        font-size: 1.1rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        padding: 10px 0;
-        transition: color 0.3s;
-    }
-
-    .history-toggle:hover {
         color: var(--toxic-green);
+        font-family: var(--font-main);
+        font-size: 1.2rem;
+        padding: 0.5rem;
+        cursor: pointer;
+        text-transform: uppercase;
+        transition: all 0.2s;
+    }
+    .action-btn:hover {
+        background: var(--toxic-green);
+        color: #000;
+    }
+    .action-btn.success {
+        background: var(--toxic-green);
+        color: #000;
+        border-color: #fff;
     }
 
-    .history-list {
+    /* Entropy */
+    .entropy-bar-container {
+        margin-bottom: 2rem;
+    }
+    .entropy-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+        color: #aaa;
+    }
+    .entropy-track {
+        height: 12px;
+        background: #111;
+        border: 1px solid #333;
+        position: relative;
+        overflow: hidden;
+    }
+    .entropy-fill {
+        height: 100%;
+        transition:
+            width 0.4s ease,
+            background 0.4s;
+    }
+    .grid-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2;
+    }
+
+    /* Controls Grid */
+    .settings-grid {
         display: flex;
         flex-direction: column;
-        gap: 8px; /* Отступ между элементами */
-        margin-top: 5px;
-        max-height: 300px;
-        overflow-y: auto;
-        padding-right: 5px; /* Место для скроллбара */
+        gap: 1.5rem;
     }
-
-    /* Кастомизация скроллбара для списка */
-    .history-list::-webkit-scrollbar {
-        width: 6px;
-    }
-    .history-list::-webkit-scrollbar-track {
-        background: #111;
-    }
-    .history-list::-webkit-scrollbar-thumb {
-        background: #444;
-        border-radius: 3px;
-    }
-
-    .history-item {
+    .setting-row label {
         display: flex;
-        align-items: flex-start; /* Выравнивание по верху, если несколько строк */
-        background: rgba(20, 20, 20, 0.8);
-        border: 1px solid #333;
-        color: #bbb;
-        padding: 8px 10px;
-        text-align: left;
-        font-family: "Handjet", monospace;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.2s;
-
-        /* КЛЮЧЕВЫЕ СВОЙСТВА ДЛЯ ПЕРЕНОСА */
-        white-space: normal; /* Разрешить перенос строк */
-        word-break: break-all; /* Ломать длинные слова/строки без пробелов */
-        line-height: 1.2; /* Плотность строк */
-        height: auto; /* Высота подстраивается под контент */
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
     }
-
-    .history-item:hover {
-        border-color: var(--toxic-green);
+    .setting-row .val {
         color: var(--toxic-green);
+        font-weight: bold;
+    }
+
+    /* Custom Slider */
+    input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        background: transparent;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 24px;
+        width: 12px;
+        background: var(--toxic-green);
+        cursor: pointer;
+        margin-top: -8px;
+        border: 1px solid #000;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 8px;
+        background: #222;
+        border: 1px solid #444;
+    }
+
+    /* Custom Checkboxes Grid */
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 1rem;
+    }
+    .cyber-check {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        user-select: none;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 5px 10px;
+        border: 1px solid transparent;
+    }
+    .cyber-check:hover {
+        border-color: #444;
+    }
+    .cyber-check input {
+        display: none;
+    }
+    .check-box {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--toxic-green);
+        display: inline-block;
+        position: relative;
+    }
+    .cyber-check input:checked + .check-box::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        background: var(--toxic-green);
+        box-shadow: 0 0 5px var(--toxic-green);
+    }
+    .check-label {
+        font-size: 1.1rem;
+    }
+
+    /* Cyrillic Switch */
+    .cyrillic-switch .switch-container {
+        cursor: pointer;
+        width: 100%;
+    }
+    .cyrillic-switch input {
+        display: none;
+    }
+    .switch-track {
+        display: flex;
+        width: 100%;
+        height: 40px;
+        background: #111;
+        border: 2px solid var(--toxic-green);
+        position: relative;
+        align-items: center;
+        justify-content: space-around;
+    }
+    .switch-thumb {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        bottom: 2px;
+        width: 50%;
+        background: var(--toxic-green);
+        transition: 0.3s;
+        z-index: 1;
+        opacity: 0.2;
+    }
+    .cyrillic-switch input:checked + .switch-track .switch-thumb {
+        left: 50%;
+        transform: translateX(-2px);
+    }
+    .label-off,
+    .label-on {
+        z-index: 2;
+        font-weight: bold;
+    }
+    .cyrillic-switch input:checked + .switch-track .label-on {
+        color: var(--toxic-green);
+        text-shadow: 0 0 5px;
+    }
+    .cyrillic-switch input:not(:checked) + .switch-track .label-off {
+        color: var(--toxic-green);
+        text-shadow: 0 0 5px;
+    }
+
+    /* Select */
+    .cyber-select {
+        width: 100%;
+        background: #000;
+        color: var(--toxic-green);
+        border: 1px solid var(--toxic-green);
+        font-family: var(--font-main);
+        font-size: 1.2rem;
+        padding: 0.5rem;
+        margin-top: 5px;
+    }
+
+    .big-gen-btn {
+        width: 100%;
+        margin-top: 2rem;
+        background: var(--toxic-green);
+        color: #000;
+        border: none;
+        padding: 1rem;
+        font-family: var(--font-main);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        clip-path: polygon(
+            10px 0,
+            100% 0,
+            100% calc(100% - 10px),
+            calc(100% - 10px) 100%,
+            0 100%,
+            0 10px
+        );
+        transition:
+            transform 0.1s,
+            box-shadow 0.2s;
+    }
+    .big-gen-btn:hover {
+        box-shadow: 0 0 15px var(--toxic-green);
+    }
+    .big-gen-btn:active {
+        transform: scale(0.98);
+    }
+
+    .error-msg {
+        color: var(--error-color);
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    /* History Styles */
+    .history-panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        max-height: 500px;
+    }
+    .history-list {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .clear-btn {
+        background: transparent;
+        border: 1px solid #444;
+        color: #777;
+        font-family: var(--font-main);
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    .clear-btn:hover {
+        border-color: var(--error-color);
+        color: var(--error-color);
+    }
+
+    .log-entry {
+        background: rgba(255, 255, 255, 0.02);
+        border: none;
+        border-left: 2px solid #333;
+        color: #aaa;
+        text-align: left;
+        padding: 8px;
+        font-family: var(--font-main);
+        cursor: pointer;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        transition: 0.2s;
+    }
+    .log-entry:hover {
         background: rgba(158, 245, 35, 0.05);
-        transform: translateX(2px); /* Небольшой сдвиг вправо при наведении */
+        border-left-color: var(--toxic-green);
+        color: var(--toxic-green);
     }
-
-    .history-index {
+    .log-time {
+        font-size: 0.8rem;
         color: #555;
-        margin-right: 10px;
-        user-select: none; /* Чтобы не выделялось при копировании мышкой */
-        white-space: nowrap; /* Индекс всегда в одну строку */
-        font-size: 0.9em;
-        margin-top: 1px;
+        white-space: nowrap;
+        margin-top: 2px;
+    }
+    .log-data {
+        word-break: break-all;
+        line-height: 1.2;
+        font-size: 1rem;
+    }
+    .empty-log {
+        text-align: center;
+        color: #444;
+        padding: 2rem;
+        font-style: italic;
     }
 
-    .history-pwd {
-        flex: 1; /* Занимает все оставшееся место */
-    }
-
-    /* Modal */
     .modal-backdrop {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(4px); /* Размытие фона */
         display: flex;
-        justify-content: center;
         align-items: center;
-        z-index: 1000;
-        cursor: pointer;
+        justify-content: center;
+        z-index: 2000;
     }
+
     .modal {
-        background: #1a1a1a;
-        padding: 2rem;
+        background: #000;
         border: 2px solid var(--toxic-green);
-        text-align: center;
-        box-shadow: 0 0 20px var(--toxic-green-dark);
-        cursor: default;
+        padding: 20px;
+        box-shadow: 0 0 40px rgba(158, 245, 35, 0.2);
+
+        /* Flexbox для жесткого центрирования */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem; /* Отступы между элементами */
+
+        max-width: 90%;
+        width: 360px;
     }
-    .modal canvas {
-        margin: 1rem 0;
-        border: 5px solid var(--toxic-green);
-    }
-    .close-btn {
-        display: block;
+
+    .modal-header {
+        font-size: 1.5rem;
+        color: var(--toxic-green);
+        border-bottom: 1px dashed #333;
         width: 100%;
-        padding: 0.5rem;
+        text-align: center;
+        padding-bottom: 0.5rem;
+        font-weight: 700;
+    }
+
+    /* Настройки для самого QR */
+    .modal canvas {
+        border: 4px solid #1a1a1a; /* Рамка вокруг кода */
+        max-width: 100%;
+        height: auto;
+        image-rendering: pixelated; /* Чтобы пиксели были четкими */
+    }
+
+    .close-btn {
         background: transparent;
         border: 1px solid var(--toxic-green);
         color: var(--toxic-green);
-        font-family: "Handjet";
-        font-size: 1.2rem;
+        padding: 12px;
+        font-family: var(--font-main);
         cursor: pointer;
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-transform: uppercase;
+
+        /* Растягиваем кнопку на всю ширину для удобства */
+        width: 100%;
+        transition: all 0.2s;
     }
+
     .close-btn:hover {
         background: var(--toxic-green);
-        color: black;
-    }
-
-    /* Shared (Original) */
-    .card {
-        text-align: center;
-        flex: 1;
-        margin: 0 auto;
-        background-color: var(--dark-background);
-        width: 100%;
-        max-width: 500px;
-        padding: 1rem;
-        box-sizing: border-box;
-        font-family: "Handjet";
-        font-weight: 500;
-        font-size: clamp(2rem, 4vw, 1.5rem);
-    }
-    .password-display {
-        display: flex;
-        align-items: center;
-        margin-bottom: 0.5rem;
-        width: 100%;
-        height: 48px;
-        background: #2c2c2c;
-        border-radius: 8px;
-        border: 2px solid var(--toxic-green);
-        overflow: hidden;
-    }
-    .password-text {
-        flex-grow: 1;
-        padding: 0.75rem;
-        font-family: "Handjet";
-        font-weight: 500;
-        font-size: clamp(1.2rem, 4vw, 1.8rem);
-        color: var(--toxic-green);
-        text-align: left;
-        white-space: nowrap;
-        overflow-x: hidden;
-        text-overflow: ellipsis;
-        background: #1a1a1a;
-        letter-spacing: 0.1em;
-        line-height: 1;
-    }
-    .copy-button {
-        padding: 0.75rem 1rem;
-        font-size: clamp(1.2rem, 4vw, 1.8rem);
-        background-color: var(--toxic-green);
-        color: rgb(0, 0, 0);
-        border: none;
-        border-radius: 0 4px 4px 0;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        white-space: nowrap;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .generate-button {
-        font-family: "Handjet";
-        padding: 0.75rem;
-        font-size: clamp(1.2rem, 5vw, 2rem);
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        background-color: var(--toxic-green);
-        color: black;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 250px;
-        height: 48px;
-    }
-    .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #2c2c2c;
-        transition: 0.4s;
-        border-radius: 10px;
-        border: 2px solid var(--toxic-green);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 30px;
-    }
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 38px;
-        width: 122px;
-        left: 2px;
-        bottom: 3px;
-        background-color: var(--toxic-green);
-        transition: 0.4s;
-        border-radius: 5px;
-        z-index: 1;
-    }
-    .latin,
-    .cyrillic {
-        color: black;
-        font-weight: 700;
-        z-index: 2;
-        font-size: 1.4em;
-        transition: color 0.4s;
-        width: 60px;
-        text-align: center;
-    }
-    input:checked + .slider:before {
-        transform: translateX(120px);
-    }
-    input:checked + .slider .latin {
-        color: var(--toxic-green);
-    }
-    input:not(:checked) + .slider .cyrillic {
-        color: var(--toxic-green);
-    }
-    input:checked + .slider .cyrillic {
-        color: black;
-    }
-    input:not(:checked) + .slider .latin {
-        color: black;
-    }
-    .alphabet-switch {
-        margin: 1.5rem 0;
-        display: flex;
-        justify-content: center;
-    }
-
-    .checkbox-options {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-top: 1rem;
-    }
-    .checkbox-options .option {
-        flex: 0 1 auto;
-        min-width: 80px;
-        margin: 0;
-    }
-    .options {
-        margin-bottom: 1rem;
-    }
-    .option {
-        display: flex;
-        align-items: center;
-        margin-bottom: 0.5rem;
-        gap: 0.5rem;
-        color: var(--text-color);
-    }
-    /* Специальный класс для ползунков, чтобы они занимали всю ширину */
-    .option.full-width {
-        width: 100%;
-        display: block;
-        text-align: left;
-    }
-    .option.full-width label {
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .option label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-        white-space: nowrap;
-        color: var(--text-color);
-    }
-
-    input[type="checkbox"] {
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        margin: 0;
-        border-radius: 10px;
-        cursor: pointer;
-        width: 1.2em;
-        height: 1.2em;
-        background-color: var(--toxic-green-dark);
-        border: 2px solid var(--toxic-green);
-        position: relative;
-    }
-    input[type="checkbox"]:checked {
-        background-color: var(--toxic-green);
-    }
-    input[type="checkbox"]:checked::after {
-        content: "✔";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: black;
-        font-size: 0.8em;
-    }
-    input[type="range"] {
-        flex: 1;
-        min-width: 0;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        width: 100%;
-        height: 10px;
-        background: var(--toxic-green-dark);
-        border-radius: 5px;
-        outline: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        background: #00ff00;
-        border-radius: 20%;
-        cursor: pointer;
-    }
-    input[type="range"]::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        background: var(--toxic-green);
-        border-radius: 20%;
-        border-width: 0px;
-        cursor: pointer;
-    }
-
-    .error {
-        color: #d32f2f;
-        font-size: 1.2rem;
-        margin-top: 10px;
+        color: #000;
+        box-shadow: 0 0 15px var(--toxic-green);
     }
 </style>

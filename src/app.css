@@ -1,33 +1,86 @@
-@font-face {
-  font-family: 'Handjet';
-  src: url('/fonts/Handjet.ttf') format('truetype');
+/* Импортируем JetBrains Mono из Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap");
+
+:root {
+    --toxic-green: #9ef523;
+    --toxic-green-dim: #9ef52340;
+    --toxic-green-dark: #2a3a10;
+    --dark-background: #050505;
+    --panel-background: #0f0f0f;
+    --text-color: #9ef523;
+    --error-color: #ff3333;
+    --scanline-color: rgba(0, 0, 0, 0.5);
+
+    /* Переключаемся на новый шрифт */
+    --font-main: "JetBrains Mono", monospace;
 }
 
-html, body {
-  touch-action: manipulation;
-  margin: 0;
-  padding: 0;
-  width: 0 auto;
-  font-family: 'HandJet';
-  color: var(--toxic-green);
+html,
+body {
+    touch-action: manipulation;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-main); /* Применяем шрифт */
+    background-color: var(--dark-background);
+    color: var(--text-color);
+    overflow-x: hidden;
+    font-weight: 500; /* Чуть жирнее для лучшей читаемости на черном */
 }
 
 #app {
-  margin: 0 auto;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+}
+
+/* Эффект старого монитора (Scanlines) - сделали чуть мягче для нового шрифта */
+body::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.15) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 999;
+    pointer-events: none;
+    position: fixed;
 }
 
 main {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
-
-
-:root {
-  --toxic-green: #9ef523;
-  --toxic-green-dark: #9ef5238d;
-  --dark-background: #000000;
-  --text-color: #9ef523;
-  background-color: var(--dark-background);
+/* Кастомизация скроллбара */
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: var(--dark-background);
+    border-left: 1px solid var(--toxic-green-dark);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--toxic-green-dark);
+    border: 1px solid var(--toxic-green);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--toxic-green);
 }
