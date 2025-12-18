@@ -279,10 +279,6 @@
                     [ XKCD ]
                 </button>
             </div>
-            <div
-                class="status-light"
-                style="background: {entropyColor}; box-shadow: 0 0 10px {entropyColor}"
-            ></div>
         </div>
 
         <!-- Дисплей -->
@@ -600,12 +596,6 @@
     .tabs button.active {
         color: var(--toxic-green);
         text-shadow: 0 0 5px var(--toxic-green-dim);
-    }
-    .status-light {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #333;
     }
 
     /* Password Display */
