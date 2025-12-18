@@ -171,10 +171,10 @@
             entropyLabel = "БЕЗОПАСНОСТЬ: УЛЬТРА";
         } else if (entropyBits < 350) {
             entropyColor = "#d600ff"; // Фиолетовый
-            entropyLabel = "БЕЗОПАСНОСТЬ: МАКСИМАЛЬНАЯ";
+            entropyLabel = "БЕЗОПАСНОСТЬ: СУПЕР";
         } else {
             entropyColor = "#ffffff"; // Белый
-            entropyLabel = "БЕЗОПАСНОСТЬ: АБСОЛЮТНАЯ";
+            entropyLabel = "БЕЗОПАСНОСТЬ: АБСОЛЮТ";
         }
 
         // Процент заполнения (Шкала 450 бит)
