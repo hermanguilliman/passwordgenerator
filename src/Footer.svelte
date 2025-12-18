@@ -4,7 +4,7 @@
 
 <footer>
     <div class="line"></div>
-    <p>Guilliman // G-PASS TERMINAL v2.0 // {currentYear}</p>
+    <p>Guilliman // G-PASS TERMINAL v2.2 // {currentYear}</p>
 </footer>
 
 <style>
