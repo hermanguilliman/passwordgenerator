@@ -2,13 +2,12 @@
     import { onMount } from "svelte";
 
     export let originalText: string = "ГЕНЕРАТОР ПАРОЛЕЙ";
-    // ... (Остальной код скрипта оставлен без изменений, логика глюка отличная)
     export let glitchProbability: number = 0.1;
     export let minGlitches: number = 1;
     export let maxGlitches: number = 3;
     export let resetDelay: number = 150;
 
-    const GLITCH_CHARS: string = "!@#$%^&*()_+-=[]{}|;:,.<>?`~";
+    const GLITCH_CHARS: string = "!@#$%^&*()_+-=[]{}|;:,.<>?";
     const INTERVAL_MS: number = 100;
 
     interface ColoredChar {
@@ -20,7 +19,6 @@
         .split("")
         .map((char) => ({ char }));
 
-    // ... (функции getRandomInt, getRandomColor, glitchText, onMount - без изменений)
     const getRandomInt = (min: number, max: number): number => {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     };
@@ -39,11 +37,13 @@
 
     const glitchText = (): void => {
         const shouldGlitch: boolean = Math.random() < glitchProbability;
+
         if (shouldGlitch) {
             const newDisplayChars: ColoredChar[] = originalText
                 .split("")
                 .map((char) => ({ char }));
             const numGlitches: number = getRandomInt(minGlitches, maxGlitches);
+
             for (let i = 0; i < numGlitches; i++) {
                 const position: number = getRandomInt(
                     0,
@@ -56,7 +56,9 @@
                     color: getRandomColor(),
                 };
             }
+
             displayChars = newDisplayChars;
+
             setTimeout(() => {
                 displayChars = originalText.split("").map((char) => ({ char }));
             }, resetDelay);
@@ -64,6 +66,7 @@
     };
 
     let interval: ReturnType<typeof setInterval>;
+
     onMount(() => {
         interval = setInterval(glitchText, INTERVAL_MS);
         return () => clearInterval(interval);
@@ -82,24 +85,25 @@
                 >
             {/each}
         </h1>
-        <div class="scan-line"></div>
     </div>
 </header>
 
 <style>
     header {
-        font-family: var(--font-main);
         width: 100%;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         display: flex;
         justify-content: center;
+        /* Предотвращает появление горизонтальной прокрутки, если глюк будет сильным */
+        overflow: hidden;
     }
 
     .header-border {
         border-bottom: 2px solid var(--toxic-green);
-        padding: 0.5rem 2rem;
+        padding: 0.5rem 1rem; /* Уменьшили боковые отступы */
         position: relative;
         background: rgba(0, 0, 0, 0.3);
+        display: inline-block; /* Контейнер сжимается по ширине текста */
     }
 
     /* Декоративные уголки */
@@ -120,17 +124,22 @@
     }
 
     h1 {
-        font-weight: 800; /* Самый жирный для заголовка */
-        letter-spacing: -1px; /* Чуть плотнее */
-        font-size: clamp(1.5rem, 5vw, 3rem);
+        font-family: var(--font-main);
+        font-weight: 700;
+        /* Уменьшили размер: было до 3rem, стало макс 2.2rem */
+        font-size: clamp(1.2rem, 5vw, 2.2rem);
         margin: 0;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
+        letter-spacing: normal;
         line-height: 1;
+        /* КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Запрещаем перенос строк */
+        white-space: nowrap;
     }
 
     .char {
         display: inline-block;
-        min-width: 0.6ch;
+        /* Фиксируем ширину каждого символа равной 1 знаку (моноширинность) */
+        /* Это предотвращает "дрожание" ширины строки при смене символов */
+        width: 1ch;
+        text-align: center;
     }
 </style>
