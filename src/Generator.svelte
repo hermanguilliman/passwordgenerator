@@ -10,7 +10,7 @@
     }
 
     // --- Состояние ---
-    let mode: "standard" | "xkcd" = "standard";
+    let mode: "standard" | "xkcd" | "phonetic" = "standard";
 
     // Standard Mode
     let length: number = 20;
@@ -27,6 +27,16 @@
     let includeNumberXKCD: boolean = true;
     let randomCapitalization: boolean = false;
     let numberRange: "10" | "100" | "1000" | "10000" = "100";
+
+    // Phonetic Mode (НОВОЕ!)
+    let syllablesPerWord: number = 3;
+    let phoneticWordCount: number = 3;
+    let phoneticSeparator: string = "-";
+    let phoneticCapitalize: boolean = true;
+    let phoneticIncludeNumber: boolean = true;
+    let phoneticNumberRange: "10" | "100" | "1000" = "100";
+    let phoneticPattern: "cv" | "cvc" | "cvcc" | "ccvc" = "cv";
+    let useCyrillicPhonetic: boolean = false;
 
     // Общие
     let password: string = "";
@@ -53,7 +63,13 @@
     const NUMBERS = "0123456789";
     const SYMBOLS = "!@#$%^&*()_+-=[]{}|;':\",./<>?`~\\";
 
-    // --- Словарь ---
+    // Фонетические константы (НОВОЕ!)
+    const LATIN_CONSONANTS = "bcdfghjklmnprstvwz";
+    const LATIN_VOWELS = "aeiou";
+    const CYRILLIC_CONSONANTS = "бвгджзклмнпрстфхцчш";
+    const CYRILLIC_VOWELS = "аеиоуыэюя";
+
+    // --- Словарь XKCD ---
     const WORD_SOURCE = `
         correct horse battery staple system hacking cyber neural matrix logic 
         ghost shell neon laser future data access denied granted protocol bunker 
@@ -143,7 +159,8 @@
     const generate = (): void => {
         error = "";
         if (mode === "standard") generateStandard();
-        else generateXKCD();
+        else if (mode === "xkcd") generateXKCD();
+        else if (mode === "phonetic") generatePhonetic();
         calculateEntropy();
     };
 
@@ -211,6 +228,101 @@
         addToHistory(password);
     };
 
+    // НОВОЕ! Генерация фонетического пароля
+    const generatePhonetic = (): void => {
+        const consonants = useCyrillicPhonetic
+            ? CYRILLIC_CONSONANTS
+            : LATIN_CONSONANTS;
+        const vowels = useCyrillicPhonetic ? CYRILLIC_VOWELS : LATIN_VOWELS;
+
+        const generateSyllable = (): string => {
+            switch (phoneticPattern) {
+                case "cv":
+                    return (
+                        getSecureRandomChar(consonants) +
+                        getSecureRandomChar(vowels)
+                    );
+                case "cvc":
+                    return (
+                        getSecureRandomChar(consonants) +
+                        getSecureRandomChar(vowels) +
+                        getSecureRandomChar(consonants)
+                    );
+                case "cvcc":
+                    return (
+                        getSecureRandomChar(consonants) +
+                        getSecureRandomChar(vowels) +
+                        getSecureRandomChar(consonants) +
+                        getSecureRandomChar(consonants)
+                    );
+                case "ccvc":
+                    return (
+                        getSecureRandomChar(consonants) +
+                        getSecureRandomChar(consonants) +
+                        getSecureRandomChar(vowels) +
+                        getSecureRandomChar(consonants)
+                    );
+                default:
+                    return (
+                        getSecureRandomChar(consonants) +
+                        getSecureRandomChar(vowels)
+                    );
+            }
+        };
+
+        const generateWord = (): string => {
+            let word = "";
+            for (let i = 0; i < syllablesPerWord; i++) {
+                word += generateSyllable();
+            }
+            return word;
+        };
+
+        const words: string[] = [];
+        for (let i = 0; i < phoneticWordCount; i++) {
+            let word = generateWord();
+            if (phoneticCapitalize) {
+                word = word.charAt(0).toUpperCase() + word.slice(1);
+            }
+            words.push(word);
+        }
+
+        let pwd = words.join(phoneticSeparator);
+
+        if (phoneticIncludeNumber) {
+            const range = parseInt(phoneticNumberRange);
+            const num = secureRandomInt(range);
+            const padLength = phoneticNumberRange.length - 1;
+            pwd += phoneticSeparator + String(num).padStart(padLength, "0");
+        }
+
+        password = pwd;
+        addToHistory(password);
+    };
+
+    // Расчет бит на слог для фонетического режима
+    const getPhoneticSyllableBits = (): number => {
+        const consonants = useCyrillicPhonetic
+            ? CYRILLIC_CONSONANTS
+            : LATIN_CONSONANTS;
+        const vowels = useCyrillicPhonetic ? CYRILLIC_VOWELS : LATIN_VOWELS;
+        const cBits = Math.log2(consonants.length);
+        const vBits = Math.log2(vowels.length);
+
+        switch (phoneticPattern) {
+            case "cv":
+                return cBits + vBits;
+            case "cvc":
+                return cBits * 2 + vBits;
+            case "cvcc":
+                return cBits * 3 + vBits;
+            case "ccvc":
+                return cBits * 3 + vBits;
+            default:
+                return cBits + vBits;
+        }
+    };
+
     const getActiveCategories = (): CharCategory[] => {
         const categories: CharCategory[] = [];
 
@@ -260,8 +372,10 @@
 
         if (mode === "standard") {
             calculateStandardEntropy();
-        } else {
+        } else if (mode === "xkcd") {
             calculateXKCDEntropy();
+        } else if (mode === "phonetic") {
+            calculatePhoneticEntropy();
         }
 
         updateEntropyDisplay();
@@ -329,6 +443,34 @@
 
         if (includeNumberXKCD) {
             const range = parseInt(numberRange);
+            const numBits = Math.log2(range);
+            totalBits += numBits;
+            entropyDetails.push({
+                label: `ЧИСЛО [0-${range - 1}]`,
+                bits: numBits,
+            });
+        }
+
+        entropyBits = totalBits;
+    };
+
+    // НОВОЕ! Расчет энтропии для фонетического режима
+    const calculatePhoneticEntropy = (): void => {
+        let totalBits = 0;
+        const syllableBits = getPhoneticSyllableBits();
+        const totalSyllables = syllablesPerWord * phoneticWordCount;
+
+        const syllableEntropy = totalSyllables * syllableBits;
+        totalBits += syllableEntropy;
+
+        const patternLabel = phoneticPattern.toUpperCase();
+        entropyDetails.push({
+            label: `СЛОГИ [${patternLabel}] x${totalSyllables}`,
+            bits: syllableEntropy,
+        });
+
+        if (phoneticIncludeNumber) {
+            const range = parseInt(phoneticNumberRange);
             const numBits = Math.log2(range);
             totalBits += numBits;
             entropyDetails.push({
@@ -497,6 +639,26 @@
     const toggleDetails = (): void => {
         showDetails = !showDetails;
     };
+
+    // Получение информации о паттерне для UI
+    const getPatternInfo = (pattern: string): string => {
+        const consonants = useCyrillicPhonetic
+            ? CYRILLIC_CONSONANTS
+            : LATIN_CONSONANTS;
+        const vowels = useCyrillicPhonetic ? CYRILLIC_VOWELS : LATIN_VOWELS;
+        switch (pattern) {
+            case "cv":
+                return `C[${consonants.length}]+V[${vowels.length}]`;
+            case "cvc":
+                return `C+V+C`;
+            case "cvcc":
+                return `C+V+C+C`;
+            case "ccvc":
+                return `C+C+V+C`;
+            default:
+                return "";
+        }
+    };
 </script>
 
 <div class="cyber-container">
@@ -520,6 +682,15 @@
                     }}
                 >
                     [ XKCD ]
+                </button>
+                <button
+                    class:active={mode === "phonetic"}
+                    on:click={() => {
+                        mode = "phonetic";
+                        generate();
+                    }}
+                >
+                    [ ФОНЕТИК ]
                 </button>
             </div>
         </div>
@@ -647,8 +818,7 @@
                                     >LAT [{LATIN_LOWER.length * 2}]</span
                                 >
                                 <span class="label-on"
-                                    >КИР [{CYRILLIC_LOWER.length *
-                                        2}]</span
+                                    >КИР [{CYRILLIC_LOWER.length * 2}]</span
                                 >
                             </span>
                         </label>
@@ -739,7 +909,7 @@
                         </label>
                     </div>
                 </div>
-            {:else}
+            {:else if mode === "xkcd"}
                 <!-- XKCD Mode -->
                 <div class="setting-group">
                     <div class="slider-row">
@@ -864,6 +1034,170 @@
                     <span class="dict-separator">/</span>
                     <span class="dict-value"
                         >{BITS_PER_WORD.toFixed(4)} БИТ/СЛОВО</span
+                    >
+                </div>
+            {:else if mode === "phonetic"}
+
+                <div class="setting-group">
+                    <div class="cyrillic-switch">
+                        <label class="switch-container">
+                            <input
+                                type="checkbox"
+                                bind:checked={useCyrillicPhonetic}
+                                on:change={handleOptionChange}
+                            />
+                            <span class="switch-track">
+                                <span class="switch-thumb"></span>
+                                <span class="label-off"
+                                    >LAT [{LATIN_CONSONANTS.length}C+{LATIN_VOWELS.length}V]</span
+                                >
+                                <span class="label-on"
+                                    >КИР [{CYRILLIC_CONSONANTS.length}C+{CYRILLIC_VOWELS.length}V]</span
+                                >
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <div class="select-row">
+                        <span class="select-label">ПАТТЕРН СЛОГА</span>
+                        <span class="select-hint"
+                            >[{getPhoneticSyllableBits().toFixed(2)} бит/слог]</span
+                        >
+                        <select
+                            bind:value={phoneticPattern}
+                            on:change={generate}
+                            class="cyber-select"
+                        >
+                            <option value="cv">CV (ба, ке, ми)</option>
+                            <option value="cvc">CVC (бак, кем, мир)</option>
+                            <option value="cvcc">CVCC (банк, керн)</option>
+                            <option value="ccvc">CCVC (стар, крик)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="setting-group dual-sliders">
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span class="slider-label">СЛОГОВ В СЛОВЕ</span>
+                            <span class="slider-value">{syllablesPerWord}</span>
+                        </div>
+                        <input
+                            type="range"
+                            bind:value={syllablesPerWord}
+                            min="2"
+                            max="6"
+                            on:input={generate}
+                        />
+                        <div class="slider-range">
+                            <span>2</span>
+                            <span>6</span>
+                        </div>
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span class="slider-label">КОЛИЧЕСТВО СЛОВ</span>
+                            <span class="slider-value">{phoneticWordCount}</span
+                            >
+                            <span class="slider-hint"
+                                >~{(
+                                    phoneticWordCount *
+                                    syllablesPerWord *
+                                    getPhoneticSyllableBits()
+                                ).toFixed(1)} бит</span
+                            >
+                        </div>
+                        <input
+                            type="range"
+                            bind:value={phoneticWordCount}
+                            min="2"
+                            max="6"
+                            on:input={generate}
+                        />
+                        <div class="slider-range">
+                            <span>2</span>
+                            <span>6</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <div class="select-row">
+                        <span class="select-label">РАЗДЕЛИТЕЛЬ</span>
+                        <select
+                            bind:value={phoneticSeparator}
+                            on:change={generate}
+                            class="cyber-select"
+                        >
+                            <option value="-">ТИРЕ [-]</option>
+                            <option value="_">НИЖНЕЕ [_]</option>
+                            <option value=".">ТОЧКА [.]</option>
+                            <option value="">БЕЗ РАЗДЕЛИТЕЛЯ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <div class="checkbox-grid phonetic-options">
+                        <label class="cyber-check">
+                            <input
+                                type="checkbox"
+                                bind:checked={phoneticCapitalize}
+                                on:change={handleOptionChange}
+                            />
+                            <span class="check-box"></span>
+                            <span class="check-label">
+                                Заглавные
+                                <span class="entropy-tag zero">[+0]</span>
+                            </span>
+                        </label>
+                        <label class="cyber-check">
+                            <input
+                                type="checkbox"
+                                bind:checked={phoneticIncludeNumber}
+                                on:change={handleOptionChange}
+                            />
+                            <span class="check-box"></span>
+                            <span class="check-label">
+                                Число
+                                <span class="entropy-tag plus"
+                                    >[+{Math.log2(
+                                        parseInt(phoneticNumberRange)
+                                    ).toFixed(1)}]</span
+                                >
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                {#if phoneticIncludeNumber}
+                    <div class="setting-group">
+                        <div class="select-row">
+                            <span class="select-label">ДИАПАЗОН ЧИСЛА</span>
+                            <select
+                                bind:value={phoneticNumberRange}
+                                on:change={generate}
+                                class="cyber-select"
+                            >
+                                <option value="10">0-9</option>
+                                <option value="100">00-99</option>
+                                <option value="1000">000-999</option>
+                            </select>
+                        </div>
+                    </div>
+                {/if}
+
+                <div class="dict-info phonetic-info">
+                    <span class="dict-label">ФОРМУЛА:</span>
+                    <span class="dict-value"
+                        >{phoneticWordCount} слов × {syllablesPerWord} слогов</span
+                    >
+                    <span class="dict-separator">=</span>
+                    <span class="dict-value highlight"
+                        >{phoneticWordCount * syllablesPerWord} слогов</span
                     >
                 </div>
             {/if}
@@ -1000,7 +1334,8 @@
     /* === TABS === */
     .tabs {
         display: flex;
-        gap: 1.5rem;
+        gap: 1rem;
+        flex-wrap: wrap;
     }
 
     .tabs button {
@@ -1008,7 +1343,7 @@
         border: none;
         color: #777;
         font-family: var(--font-main);
-        font-size: 1.1rem;
+        font-size: 1rem;
         cursor: pointer;
         transition: all 0.2s;
         padding: 0;
@@ -1032,7 +1367,7 @@
 
     .password-label {
         font-size: 1.6rem;
-        color: #FFF;
+        color: #fff;
         margin-bottom: 18px;
         letter-spacing: 1px;
         text-align: center;
@@ -1344,7 +1679,7 @@
     .label-on {
         z-index: 2;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.9rem;
         color: #666;
         transition: all 0.25s;
         letter-spacing: 1px;
@@ -1365,6 +1700,16 @@
         background: rgba(0, 0, 0, 0.2);
         padding: 1rem;
         border: 1px solid #333;
+    }
+
+    .dual-sliders {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .dual-sliders .slider-row {
+        flex: 1;
     }
 
     .slider-header {
@@ -1433,12 +1778,19 @@
         gap: 10px;
     }
 
-    .checkbox-grid.xkcd-options {
-        grid-template-columns: repeat(3, 1fr);
+    .checkbox-grid.xkcd-options,
+    .checkbox-grid.phonetic-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 600px) {
+        .checkbox-grid.xkcd-options {
+            grid-template-columns: repeat(3, 1fr);
+        }
     }
 
     @media (max-width: 600px) {
-        .checkbox-grid.xkcd-options {
+        .checkbox-grid {
             grid-template-columns: 1fr;
         }
     }
@@ -1581,6 +1933,10 @@
         background: rgba(0, 0, 0, 0.2);
     }
 
+    .dict-info.phonetic-info {
+        border-color: rgba(158, 245, 35, 0.3);
+    }
+
     .dict-label {
         font-size: 0.9rem;
         color: #999;
@@ -1591,6 +1947,11 @@
         font-size: 1rem;
         color: var(--toxic-green);
         font-weight: 600;
+    }
+
+    .dict-value.highlight {
+        background: rgba(158, 245, 35, 0.1);
+        padding: 2px 8px;
     }
 
     .dict-separator {
