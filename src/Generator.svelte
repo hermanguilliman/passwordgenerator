@@ -125,62 +125,66 @@
             return;
         }
 
+        // --- 1. Расчет битов (Математика) ---
         let poolSize = 0;
         if (mode === "standard") {
-            // Стандартный режим (тут без изменений)
             if (includeLowercase) poolSize += useCyrillic ? 33 : 26;
             if (includeUppercase) poolSize += useCyrillic ? 33 : 26;
             if (includeNumbers) poolSize += 10;
             if (includeSymbols) poolSize += 24;
 
-            if (poolSize === 0) {
-                entropyBits = 0;
-            } else {
+            if (poolSize === 0) entropyBits = 0;
+            else
                 entropyBits = Math.floor(password.length * Math.log2(poolSize));
-            }
         } else {
-            // XKCD Режим
-            // 1. Энтропия слов: кол-во слов * log2(размера_словаря)
-            // Словарь теперь ~460 слов, log2(460) ≈ 8.84 бита на слово
+            // XKCD режим
             let wordEntropy = Math.log2(ENGLISH_WORDS.length);
-
-            // 2. Энтропия разделителя (если их несколько на выбор, но у нас пользователь выбирает один конкретный,
-            // поэтому с точки зрения взломщика, если он знает формат, энтропия разделителя = 0.
-            // Однако, если мы считаем "стойкость пароля в вакууме", разделитель увеличивает длину.
-            // Но правильно считать энтропию именно выбора слов).
             entropyBits = Math.floor(wordCount * wordEntropy);
-
-            // 3. Число в конце (0-99) добавляет log2(100) ≈ 6.64 бита
-            if (includeNumberXKCD) {
-                entropyBits += Math.floor(Math.log2(100));
-            }
-
-            // 4. Заглавные буквы.
-            // В текущей реализации мы либо делаем ВСЕ заглавными, либо нет.
-            // Это не добавляет энтропии (взломщик просто проверяет два варианта).
-            // Поэтому тут мы ничего не плюсуем.
+            if (includeNumberXKCD) entropyBits += Math.floor(Math.log2(100));
         }
 
-        // Обновляем визуализацию
-        // Шкала до 128 бит
-        entropyPercent = Math.min(entropyBits, 128);
+        // --- 2. Градации (Статусы) ---
 
-        // Градации безопасности
-        if (entropyBits < 45) {
-            entropyColor = "#ff3333";
-            entropyLabel = "СЛАБЫЙ";
-        } else if (entropyBits < 65) {
-            entropyColor = "#ffff00";
-            entropyLabel = "СРЕДНИЙ";
-        } else if (entropyBits < 90) {
-            // 90 бит - это очень хорошо
-            entropyColor = "#9ef523";
-            entropyLabel = "НАДЕЖНЫЙ";
-        } else {
-            // > 90 бит - параноидальный уровень
-            entropyColor = "#00ffff"; // Голубой цвет (Cyan) для супер-защиты
+        // 0-45 бит (Очень короткий)
+        if (entropyBits < 30) {
+            entropyColor = "#ff3333"; // Красный
+            entropyLabel = "КРИТИЧЕСКАЯ";
+        }
+        // 45-90 бит (Слабый)
+        else if (entropyBits < 90) {
+            entropyColor = "#ff7700"; // Оранжевый
+            entropyLabel = "НИЗКАЯ";
+        }
+        // 90-130 бит (Средний - стандарт для многих сайтов)
+        else if (entropyBits < 130) {
+            entropyColor = "#ffff00"; // Желтый
+            entropyLabel = "СРЕДНЯЯ";
+        }
+        // 130-180 бит (Хороший - 20+ символов)
+        else if (entropyBits < 200) {
+            entropyColor = "#9ef523"; // Toxic Green
+            entropyLabel = "ВЫСОКАЯ";
+        }
+        // 180-260 бит (Отличный - 30+ символов)
+        else if (entropyBits < 260) {
+            entropyColor = "#00ffff"; // Cyan
             entropyLabel = "УЛЬТРА";
         }
+        // 260-350 бит (Мощный - 45+ символов)
+        else if (entropyBits < 350) {
+            entropyColor = "#d600ff"; // Фиолетовый
+            entropyLabel = "МАКСИМАЛЬНАЯ";
+        }
+        // 350+ бит (Предел - 60+ символов)
+        else {
+            entropyColor = "#ffffff"; // Белый
+            entropyLabel = "АБСОЛЮТНАЯ";
+        }
+
+        // --- 3. Визуализация (Полоска) ---
+        // Ставим лимит шкалы 450 бит.
+        // Теперь 225 бит (середина) будет ровно 50% ширины.
+        entropyPercent = Math.min((entropyBits / 420) * 100, 100);
     };
 
     // --- История ---
@@ -272,7 +276,7 @@
                         generate();
                     }}
                 >
-                    [ В СТИЛЕ XKCD ]
+                    [ XKCD ]
                 </button>
             </div>
             <div
@@ -317,11 +321,14 @@
                 <span>{entropyBits} BITS</span>
             </div>
             <div class="entropy-track">
+                <!-- Убрали деление на 1.92. Теперь используем entropyPercent напрямую -->
                 <div
                     class="entropy-fill"
-                    style="width: {entropyPercent /
-                        1.28}%; background: {entropyColor}; box-shadow: 0 0 8px {entropyColor}"
+                    style="width: {entropyPercent}%; 
+                            background: {entropyColor}; 
+                            box-shadow: 0 0 15px {entropyColor}, 0 0 5px {entropyColor};"
                 ></div>
+
                 <!-- Маркеры сетки -->
                 {#each Array(10) as _, i}
                     <div class="grid-line" style="left: {i * 10}%"></div>
