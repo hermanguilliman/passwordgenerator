@@ -526,7 +526,7 @@
 
         <div class="display-section">
             <div class="password-display-wrapper">
-                <div class="password-label">// СГЕНЕРИРОВАННЫЙ ПАРОЛЬ</div>
+                <div class="password-label">ВАШ НОВЫЙ ПАРОЛЬ</div>
                 <div class="password-field" class:pulse={copied}>
                     {password || "ИНИЦИАЛИЗАЦИЯ..."}
                 </div>
@@ -1031,10 +1031,11 @@
     }
 
     .password-label {
-        font-size: 0.9rem;
-        color: #888;
-        margin-bottom: 8px;
+        font-size: 1.6rem;
+        color: #FFF;
+        margin-bottom: 18px;
         letter-spacing: 1px;
+        text-align: center;
     }
 
     .password-field {
@@ -1123,6 +1124,7 @@
         font-weight: 600;
         letter-spacing: 1px;
         transition: all 0.3s;
+        margin-bottom: 20px;
     }
 
     .entropy-value {
@@ -1130,6 +1132,7 @@
         font-weight: 700;
         font-family: var(--font-main);
         transition: all 0.3s;
+        margin-bottom: 20px;
     }
 
     .entropy-track {
@@ -1290,7 +1293,7 @@
     .section-header {
         font-size: 0.9rem;
         color: #888;
-        margin-bottom: 1rem;
+        margin-bottom: 18px;
         letter-spacing: 1px;
     }
 
