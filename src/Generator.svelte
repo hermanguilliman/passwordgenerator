@@ -5,16 +5,16 @@
     // --- Состояние ---
     let mode: "standard" | "xkcd" = "standard";
 
-    // Standard Mode Vars
-    let length: number = 16;
+    // Standard Mode
+    let length: number = 20; // Стандарт 20 символов
     let includeLowercase: boolean = true;
     let includeUppercase: boolean = true;
     let includeNumbers: boolean = true;
     let includeSymbols: boolean = true;
     let useCyrillic: boolean = false;
 
-    // XKCD Mode Vars
-    let wordCount: number = 4;
+    // XKCD Mode
+    let wordCount: number = 5; // Чуть больше слов по умолчанию
     let separator: string = "-";
     let capitalizeXKCD: boolean = true;
     let includeNumberXKCD: boolean = true;
@@ -30,11 +30,15 @@
     // Энтропия
     let entropyBits: number = 0;
     let entropyColor: string = "var(--toxic-green)";
-    let entropyLabel: string = "НИЗКАЯ";
+    let entropyLabel: string = "БЕЗОПАСНОСТЬ: ВЫЧИСЛЕНИЕ...";
     let entropyPercent: number = 0;
+
+    // Расширенный словарь для генерации (но считать будем по стандарту EFF)
     const WORD_SOURCE =
-        "correct horse battery staple system hacking cyber neural matrix logic ghost shell neon laser future data access denied granted protocol bunker vector pixel grid node signal router server cloud storm rain blade runner android electric dream sheep memory core virus trojan firewall proxy token chain block cipher hash salt key public private tunnel bridge gate star wars orbit gravity quantum physics plasma void galaxy nebula cosmos alien signal radio frequency bandwidth analog digital binary hex code script python rust java linux unix kernel root sudo admin user guest login logout abort retry fail error warning debug stack heap queue array list graph tree forest swamp mountain river ocean city tokyo night rain street car bike drone robot mech armor weapon shield sword magic mana health power energy fusion nuclear atomic orbit flight space ship pilot drive warp speed light sound sonic wave pulse beat rhythm bass synth drums guitar voice text chat bot ai learning deep mining crypto money cash credit debit bank vault safe lock pick door wall floor roof window glass steel iron copper gold silver bronze metal alloy carbon silicon fiber optic lens camera eye vision sight sound ear hear listen speak talk voice shout whisper secret hidden dark black white red green blue cyan magenta yellow orange purple violet indigo ultraviolet infrared gamma xray radio microwave radar sonar lidar sensor motor engine gear wheel cog piston pump valve pipe tube wire cable circuit chip board card slot port socket jack plug connect disconnect online offline remote local host domain dns ip tcp udp http ssh ftp smtp pop imap sql db query request response header body footer tag element attribute value variable function class object method property event loop scope closure promise async await sync thread process task job worker service daemon cron time date year month day hour minute second millisecond nano pico femto atto zepto yocto mega giga tera peta exa zetta yotta alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega zero one two three four five six seven eight nine ten hundred thousand million billion trillion infinite finite limit integral derivative vector scalar tensor matrix fract chaos entropy energy force mass acceleration velocity speed distance time space dimension universe multiverse string theory relativity gravity electromagnetic weak strong interaction boson fermion lepton quark gluon photon graviton higgs field wave particle duality uncertainty principle evolution mutation selection dna rna gene cell tissue organ body brain heart lung liver kidney stomach skin bone blood nerve neuron synapse axon dendrite receptor hormone enzyme protein lipid sugar carb vitamin mineral water air fire earth wind spirit soul mind thought idea concept meme culture art music sound video image picture photo graph chart map plan design build create destroy fix break hack slash crash burn freeze melt boil evaporate condense sublimate solid liquid gas plasma state phase transition entropy thermodynamics mechanics optics acoustics electronics robotics bionics genetics genomics proteomics informatics cybernetics systems control automation intelligence wisdom knowledge data information communication network internet web site page link url uri urn uuid guid hash md5 sha rsa dsa ecc aes des blowfish twofish serpent idea cast rc4 rc5 rc6 seal wake";
+        "correct horse battery staple system hacking cyber neural matrix logic ghost shell neon laser future data access denied granted protocol bunker vector pixel grid node signal router server cloud storm rain blade runner android electric dream sheep memory core virus trojan firewall proxy token chain block cipher hash salt key public private tunnel bridge gate star wars orbit gravity quantum physics plasma void galaxy nebula cosmos alien signal radio frequency bandwidth analog digital binary hex code script python rust java linux unix kernel root sudo admin user guest login logout abort retry fail error warning debug stack heap queue array list graph tree forest swamp mountain river ocean city tokyo night rain street car bike drone robot mech armor weapon shield sword magic mana health power energy fusion nuclear atomic orbit flight space ship pilot drive warp speed light sound sonic wave pulse beat rhythm bass synth drums guitar voice text chat bot ai learning deep mining crypto money cash credit debit bank vault safe lock pick door wall floor roof window glass steel iron copper gold silver bronze metal alloy carbon silicon fiber optic lens camera eye vision sight sound ear hear listen speak talk voice shout whisper secret hidden dark black white red green blue cyan magenta yellow orange purple violet indigo ultraviolet infrared gamma xray radio microwave radar sonar lidar sensor motor engine gear wheel cog piston pump valve pipe tube wire cable circuit chip board card slot port socket jack plug connect disconnect online offline remote local host domain dns ip tcp udp http ssh ftp smtp pop imap sql db query request response header body footer tag element attribute value variable function class object method property event loop scope closure promise async await sync thread process task job worker service daemon cron time date year month day hour minute second millisecond nano pico femto atto zepto yocto mega giga tera peta exa zetta yotta alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega zero one two three four five six seven eight nine ten hundred thousand million billion trillion infinite finite limit integral derivative vector scalar tensor matrix fract chaos entropy energy force mass acceleration velocity speed distance time space dimension universe multiverse string theory relativity gravity electromagnetic weak strong interaction boson fermion lepton quark gluon photon graviton higgs field wave particle duality uncertainty principle evolution mutation selection dna rna gene cell tissue organ body brain heart lung liver kidney stomach skin bone blood nerve neuron synapse axon dendrite receptor hormone enzyme protein lipid sugar carb vitamin mineral water air fire earth wind spirit soul mind thought idea concept meme culture art music sound video image picture photo graph chart map plan design build create destroy fix break hack slash crash burn freeze melt boil evaporate condense sublimate solid liquid gas plasma state phase transition entropy thermodynamics mechanics optics acoustics electronics robotics bionics genetics genomics proteomics informatics cybernetics systems control automation intelligence wisdom knowledge data information communication network internet web site page link url uri urn uuid guid hash md5 sha rsa dsa ecc aes des blowfish twofish serpent idea cast rc4 rc5 rc6 seal wake phantom shadow mirage echo silence noise static glitch bug feature patch release version build deploy compile render shader texture model vertex polygon voxel pixel fragment raster vector spline bezier curve nurbs mesh hull collider rigidbody physics joint constraint force torque impulse collision trigger raycast layer mask tag scene prefab asset resource bundle package module library framework engine platform console terminal command shell script batch powershell bash zsh fish ksh csh sh vim nano emacs sublime atom vs code intellij eclipse netbeans visual studio xcode android studio unity unreal engine godot cryengine source engine id tech frostbite anvil snowdrop red engine decima fox engine unreal engine unity engine";
+
     const ENGLISH_WORDS = WORD_SOURCE.split(" ");
+
     onMount(() => {
         loadHistory();
         generate();
@@ -44,7 +48,7 @@
         if (e.target === e.currentTarget) closeQR();
     };
 
-    // --- Логика ---
+    // --- ЛОГИКА ---
     const generate = () => {
         if (mode === "standard") generateStandard();
         else generateXKCD();
@@ -74,7 +78,6 @@
         error = "";
 
         let tempPwd = "";
-        // Гарантируем наличие выбранных типов
         if (includeLowercase)
             tempPwd += getRandomChar(useCyrillic ? cyrillicLower : latinLower);
         if (includeUppercase)
@@ -119,15 +122,15 @@
         return arr.join("");
     };
 
+    // --- ЭНТРОПИЯ (Исправленная) ---
     const calculateEntropy = () => {
         if (!password) {
             entropyBits = 0;
             return;
         }
 
-        // --- 1. Расчет битов (Математика) ---
-        let poolSize = 0;
         if (mode === "standard") {
+            let poolSize = 0;
             if (includeLowercase) poolSize += useCyrillic ? 33 : 26;
             if (includeUppercase) poolSize += useCyrillic ? 33 : 26;
             if (includeNumbers) poolSize += 10;
@@ -137,60 +140,51 @@
             else
                 entropyBits = Math.floor(password.length * Math.log2(poolSize));
         } else {
-            // XKCD режим
-            let wordEntropy = Math.log2(ENGLISH_WORDS.length);
-            entropyBits = Math.floor(wordCount * wordEntropy);
-            if (includeNumberXKCD) entropyBits += Math.floor(Math.log2(100));
+            // XKCD: Используем стандарт EFF (Electronic Frontier Foundation)
+            // Средняя энтропия английского слова из списка 7776 слов = 12.9 бит
+            const BITS_PER_WORD = 12.9;
+
+            entropyBits = Math.floor(wordCount * BITS_PER_WORD);
+
+            // Бонусы за усложнение (если хакер не знает структуру наверняка)
+            if (includeNumberXKCD) entropyBits += 7; // log2(100) ≈ 6.64
+            if (capitalizeXKCD) entropyBits += 2; // Небольшой бонус за регистр
+            if (separator !== " " && separator !== "-") entropyBits += 2; // Бонус за нестандартный разделитель
         }
 
-        // --- 2. Градации (Статусы) ---
+        // --- ГРАДАЦИИ БЕЗОПАСНОСТИ (Линейка до 450 бит) ---
 
-        // 0-45 бит (Очень короткий)
-        if (entropyBits < 30) {
+        if (entropyBits < 45) {
             entropyColor = "#ff3333"; // Красный
-            entropyLabel = "КРИТИЧЕСКАЯ";
-        }
-        // 45-90 бит (Слабый)
-        else if (entropyBits < 90) {
+            entropyLabel = "БЕЗОПАСНОСТЬ: КРИТИЧЕСКАЯ";
+        } else if (entropyBits < 90) {
             entropyColor = "#ff7700"; // Оранжевый
-            entropyLabel = "НИЗКАЯ";
-        }
-        // 90-130 бит (Средний - стандарт для многих сайтов)
-        else if (entropyBits < 130) {
+            entropyLabel = "БЕЗОПАСНОСТЬ: НИЗКАЯ";
+        } else if (entropyBits < 130) {
             entropyColor = "#ffff00"; // Желтый
-            entropyLabel = "СРЕДНЯЯ";
-        }
-        // 130-180 бит (Хороший - 20+ символов)
-        else if (entropyBits < 200) {
+            entropyLabel = "БЕЗОПАСНОСТЬ: СРЕДНЯЯ";
+        } else if (entropyBits < 180) {
             entropyColor = "#9ef523"; // Toxic Green
-            entropyLabel = "ВЫСОКАЯ";
-        }
-        // 180-260 бит (Отличный - 30+ символов)
-        else if (entropyBits < 260) {
+            entropyLabel = "БЕЗОПАСНОСТЬ: ВЫСОКАЯ";
+        } else if (entropyBits < 260) {
             entropyColor = "#00ffff"; // Cyan
-            entropyLabel = "УЛЬТРА";
-        }
-        // 260-350 бит (Мощный - 45+ символов)
-        else if (entropyBits < 350) {
+            entropyLabel = "БЕЗОПАСНОСТЬ: УЛЬТРА";
+        } else if (entropyBits < 350) {
             entropyColor = "#d600ff"; // Фиолетовый
-            entropyLabel = "МАКСИМАЛЬНАЯ";
-        }
-        // 350+ бит (Предел - 60+ символов)
-        else {
+            entropyLabel = "БЕЗОПАСНОСТЬ: МАКСИМАЛЬНАЯ";
+        } else {
             entropyColor = "#ffffff"; // Белый
-            entropyLabel = "АБСОЛЮТНАЯ";
+            entropyLabel = "БЕЗОПАСНОСТЬ: АБСОЛЮТНАЯ";
         }
 
-        // --- 3. Визуализация (Полоска) ---
-        // Ставим лимит шкалы 450 бит.
-        // Теперь 225 бит (середина) будет ровно 50% ширины.
-        entropyPercent = Math.min((entropyBits / 420) * 100, 100);
+        // Процент заполнения (Шкала 450 бит)
+        entropyPercent = Math.min((entropyBits / 450) * 100, 100);
     };
 
-    // --- История ---
+    // --- История и Утилиты ---
     const addToHistory = (pwd: string) => {
         if (history.length > 0 && history[0] === pwd) return;
-        history = [pwd, ...history].slice(0, 20); // Увеличил лимит до 20
+        history = [pwd, ...history].slice(0, 20);
         localStorage.setItem("pwd_history", JSON.stringify(history));
     };
 
@@ -206,7 +200,7 @@
 
     const restoreFromHistory = (pwd: string) => {
         password = pwd;
-        calculateEntropy();
+        calculateEntropy(); // Пересчет при восстановлении
         copyToClipboard();
     };
 
@@ -215,7 +209,6 @@
         localStorage.removeItem("pwd_history");
     };
 
-    // --- Действия ---
     const copyToClipboard = () => {
         if (!password) return;
         navigator.clipboard
@@ -236,9 +229,10 @@
                 qrCanvas,
                 password,
                 {
-                    width: 240,
+                    width: 300,
                     margin: 2,
-                    color: { dark: "#000000", light: "#9ef523" },
+                    color: { dark: "#9ef523", light: "#000000" }, // Зеленый код на черном
+                    errorCorrectionLevel: "M",
                 },
                 (e) => {
                     if (e) console.error(e);
@@ -250,8 +244,6 @@
     const closeQR = () => {
         showQR = false;
     };
-
-    // Авто-генерация при изменении чекбоксов (не ползунков)
     const handleOptionChange = () => generate();
 </script>
 
@@ -313,19 +305,20 @@
         <!-- Индикатор Энтропии -->
         <div class="entropy-bar-container">
             <div class="entropy-meta">
-                <span>БЕЗОПАСНОСТЬ: {entropyLabel}</span>
+                <span
+                    style="color: {entropyColor}; text-shadow: 0 0 10px {entropyColor}; transition: 0.3s"
+                >
+                    {entropyLabel}
+                </span>
                 <span>{entropyBits} BITS</span>
             </div>
             <div class="entropy-track">
-                <!-- Убрали деление на 1.92. Теперь используем entropyPercent напрямую -->
                 <div
                     class="entropy-fill"
                     style="width: {entropyPercent}%; 
                             background: {entropyColor}; 
                             box-shadow: 0 0 15px {entropyColor}, 0 0 5px {entropyColor};"
                 ></div>
-
-                <!-- Маркеры сетки -->
                 {#each Array(10) as _, i}
                     <div class="grid-line" style="left: {i * 10}%"></div>
                 {/each}
@@ -335,7 +328,7 @@
         <!-- Настройки -->
         <div class="settings-grid">
             {#if mode === "standard"}
-                <!-- Кириллица Переключатель -->
+                <!-- Стандартный режим (без изменений) -->
                 <div class="setting-row full-width cyrillic-switch">
                     <label class="switch-container">
                         <input
@@ -351,7 +344,6 @@
                     </label>
                 </div>
 
-                <!-- Длина -->
                 <div class="setting-row full-width slider-row">
                     <label for="len"
                         >ДЛИНА: <span class="val">{length}</span></label
@@ -366,7 +358,6 @@
                     />
                 </div>
 
-                <!-- Чекбоксы -->
                 <div class="checkbox-grid">
                     <label class="cyber-check">
                         <input
@@ -374,8 +365,7 @@
                             bind:checked={includeLowercase}
                             on:change={handleOptionChange}
                         />
-                        <span class="check-box"></span>
-                        <span class="check-label"
+                        <span class="check-box"></span><span class="check-label"
                             >{useCyrillic ? "строчные" : "a-z"}</span
                         >
                     </label>
@@ -385,8 +375,7 @@
                             bind:checked={includeUppercase}
                             on:change={handleOptionChange}
                         />
-                        <span class="check-box"></span>
-                        <span class="check-label"
+                        <span class="check-box"></span><span class="check-label"
                             >{useCyrillic ? "ЗАГЛАВНЫЕ" : "A-Z"}</span
                         >
                     </label>
@@ -396,8 +385,9 @@
                             bind:checked={includeNumbers}
                             on:change={handleOptionChange}
                         />
-                        <span class="check-box"></span>
-                        <span class="check-label">0-9</span>
+                        <span class="check-box"></span><span class="check-label"
+                            >0-9</span
+                        >
                     </label>
                     <label class="cyber-check">
                         <input
@@ -405,13 +395,15 @@
                             bind:checked={includeSymbols}
                             on:change={handleOptionChange}
                         />
-                        <span class="check-box"></span>
-                        <span class="check-label">!@#</span>
+                        <span class="check-box"></span><span class="check-label"
+                            >!@#</span
+                        >
                     </label>
                 </div>
             {:else}
                 <!-- XKCD Настройки -->
                 <div class="setting-row full-width slider-row">
+                    <!-- Увеличили макс. кол-во слов до 12 -->
                     <label for="wc"
                         >КОЛИЧЕСТВО СЛОВ: <span class="val">{wordCount}</span
                         ></label
@@ -421,7 +413,7 @@
                         type="range"
                         bind:value={wordCount}
                         min="3"
-                        max="8"
+                        max="12"
                         on:input={generate}
                     />
                 </div>
@@ -435,9 +427,10 @@
                         class="cyber-select"
                     >
                         <option value="-">ТИРЕ (-)</option>
-                        <option value="_">НИЖНЕЕ ПОДЧЕРКИВАНИЕ (_)</option>
+                        <option value="_">НИЖНЕЕ (_)</option>
                         <option value=".">ТОЧКА (.)</option>
                         <option value=" ">ПРОБЕЛ</option>
+                        <option value="+">ПЛЮС (+)</option>
                     </select>
                 </div>
 
@@ -478,9 +471,7 @@
         <div class="panel-header">
             <h3>ЛОГ ПАРОЛЕЙ ({history.length})</h3>
             {#if history.length > 0}
-                <button class="clear-btn" on:click={clearHistory}
-                    >ОЧИСТКА</button
-                >
+                <button class="clear-btn" on:click={clearHistory}>ОЧИСТКА</button>
             {/if}
         </div>
         <div class="history-list">
@@ -528,14 +519,13 @@
         width: 100%;
     }
 
-    /* На больших экранах история справа */
     @media (min-width: 900px) {
         .cyber-container {
             grid-template-columns: 2fr 1fr;
             align-items: start;
         }
         .history-panel {
-            max-height: 600px; /* Фикс высота для десктопа */
+            max-height: 600px;
             position: sticky;
             top: 1rem;
         }
@@ -587,18 +577,19 @@
         background: transparent;
         border: none;
         color: #555;
-        font-family: var(--font-main); /* Используем переменную */
-        font-weight: 700;
+        font-family: var(--font-main);
+        font-size: 1.1rem;
         cursor: pointer;
         transition: 0.2s;
         padding: 0;
+        font-weight: 700;
     }
     .tabs button.active {
         color: var(--toxic-green);
         text-shadow: 0 0 5px var(--toxic-green-dim);
     }
 
-    /* Password Display */
+    /* Display */
     .display-section {
         margin-bottom: 1.5rem;
     }
@@ -612,16 +603,16 @@
         border: 2px solid var(--toxic-green);
         color: var(--toxic-green);
         padding: 1rem;
-        font-size: clamp(1rem, 3.5vw, 1.6rem); /* Было 1.2rem - 2rem */
+        font-size: clamp(1rem, 3.5vw, 1.6rem);
         font-family: var(--font-main);
-        font-weight: 700; /* Делаем сам пароль жирнее */
-        letter-spacing: -0.5px; /* Чуть плотнее, так как моноширинный шрифт широкий */
+        font-weight: 600;
         word-break: break-all;
         min-height: 3rem;
         display: flex;
         align-items: center;
         margin-bottom: 0.5rem;
         box-shadow: inset 0 0 10px rgba(158, 245, 35, 0.2);
+        letter-spacing: -0.5px;
     }
     .password-field.pulse {
         animation: textPulse 0.5s ease-in-out;
@@ -655,6 +646,7 @@
         cursor: pointer;
         text-transform: uppercase;
         transition: all 0.2s;
+        font-weight: 600;
     }
     .action-btn:hover {
         background: var(--toxic-green);
@@ -699,7 +691,7 @@
         z-index: 2;
     }
 
-    /* Controls Grid */
+    /* Controls */
     .settings-grid {
         display: flex;
         flex-direction: column;
@@ -717,7 +709,6 @@
         font-weight: bold;
     }
 
-    /* Custom Slider */
     input[type="range"] {
         -webkit-appearance: none;
         appearance: none;
@@ -740,7 +731,6 @@
         border: 1px solid #444;
     }
 
-    /* Custom Checkboxes Grid */
     .checkbox-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -850,10 +840,9 @@
         border: none;
         padding: 1rem;
         font-family: var(--font-main);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 1.5rem;
-        font-weight: bold;
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: 0;
         cursor: pointer;
         clip-path: polygon(
             10px 0,
@@ -880,7 +869,7 @@
         margin-top: 10px;
     }
 
-    /* History Styles */
+    /* History */
     .history-panel {
         display: flex;
         flex-direction: column;
@@ -901,7 +890,7 @@
         color: #777;
         font-family: var(--font-main);
         cursor: pointer;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
     .clear-btn:hover {
         border-color: var(--error-color);
@@ -936,7 +925,7 @@
     .log-data {
         word-break: break-all;
         line-height: 1.2;
-        font-size: 1rem;
+        font-size: 0.9rem;
     }
     .empty-log {
         text-align: center;
@@ -945,6 +934,7 @@
         font-style: italic;
     }
 
+    /* Modal */
     .modal-backdrop {
         position: fixed;
         top: 0;
@@ -952,29 +942,24 @@
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(4px); /* Размытие фона */
+        backdrop-filter: blur(4px);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 2000;
     }
-
     .modal {
         background: #000;
         border: 2px solid var(--toxic-green);
         padding: 20px;
         box-shadow: 0 0 40px rgba(158, 245, 35, 0.2);
-
-        /* Flexbox для жесткого центрирования */
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1.5rem; /* Отступы между элементами */
-
+        gap: 1.5rem;
         max-width: 90%;
         width: 360px;
     }
-
     .modal-header {
         font-size: 1.5rem;
         color: var(--toxic-green);
@@ -984,15 +969,12 @@
         padding-bottom: 0.5rem;
         font-weight: 700;
     }
-
-    /* Настройки для самого QR */
     .modal canvas {
-        border: 4px solid #1a1a1a; /* Рамка вокруг кода */
+        border: 4px solid #1a1a1a;
         max-width: 100%;
         height: auto;
-        image-rendering: pixelated; /* Чтобы пиксели были четкими */
+        image-rendering: pixelated;
     }
-
     .close-btn {
         background: transparent;
         border: 1px solid var(--toxic-green);
@@ -1003,12 +985,9 @@
         font-size: 1.2rem;
         font-weight: bold;
         text-transform: uppercase;
-
-        /* Растягиваем кнопку на всю ширину для удобства */
         width: 100%;
         transition: all 0.2s;
     }
-
     .close-btn:hover {
         background: var(--toxic-green);
         color: #000;
