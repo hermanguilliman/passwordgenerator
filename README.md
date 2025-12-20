@@ -1,4 +1,5 @@
 # # G-PASS TERMINAL — Генератор паролей
+[![Netlify Status](https://api.netlify.com/api/v1/badges/504cfea2-c632-44ee-b6ea-625e2f1bb24f/deploy-status)](https://app.netlify.com/projects/guillimanpass/deploys)
 
 Криптографически безопасный генератор паролей с тремя режимами генерации, расчётом энтропии и киберпанк-интерфейсом.
 
