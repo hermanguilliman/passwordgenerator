@@ -1,47 +1,133 @@
-# Svelte + TS + Vite
+# # G-PASS TERMINAL — Генератор паролей
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+Криптографически безопасный генератор паролей с тремя режимами генерации, расчётом энтропии и киберпанк-интерфейсом.
 
-## Recommended IDE Setup
+<!-- Можно добавить бейджи -->
+<!-- ![Netlify Status](https://api.netlify.com/api/v1/badges/YOUR_BADGE_ID/deploy-status) -->
+<!-- ![License](https://img.shields.io/github/license/YOUR_USERNAME/YOUR_REPO) -->
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## 🔗 Демо
 
-## Need an official Svelte framework?
+**[Открыть генератор](https://password.guilliman.ru/)** — автоматически деплоится из `main` ветки.
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## ✨ Возможности
 
-## Technical considerations
+### Три режима генерации
 
-**Why use this over SvelteKit?**
+| Режим            | Описание                                | Пример                  |
+| ---------------- | --------------------------------------- | ----------------------- |
+| **Стандартный**  | Случайные символы с гарантией категорий | `Xk#9mP$2nL@qW`         |
+| **XKCD**         | Запоминаемые фразы из слов              | `Cyber-Matrix-Ghost-42` |
+| **Фонетический** | Произносимые псевдослова                | `Bakemi-Toruva-Sinelo`  |
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+### Ключевые особенности
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+- **Криптографически безопасный RNG** — используется `crypto.getRandomValues()` с rejection sampling для устранения bias
+- **Точный расчёт энтропии** — учитывает гарантированные категории, перестановки и структуру пароля
+- **Поддержка кириллицы** — расширенный алфавит для стандартного и фонетического режимов
+- **Оценка времени взлома** — расчёт для офлайн-атаки при 10¹⁰ хешей/сек
+- **QR-код** — для переноса пароля на мобильные устройства
+- **История** — последние 20 паролей сохраняются в localStorage
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+## 🔧 Технические детали
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+### Криптографический RNG
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+```typescript
+const secureRandomInt = (max: number): number => {
+    const randomBuffer = new Uint32Array(1);
+    const maxValid = Math.floor(0xffffffff / max) * max;
 
-**Why include `.vscode/extensions.json`?**
+    do {
+        crypto.getRandomValues(randomBuffer);
+    } while (randomBuffer[0] >= maxValid);
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+    return randomBuffer[0] % max;
+};
 ```
+
+Rejection sampling гарантирует равномерное распределение при любом значении `max`.
+
+### Расчёт энтропии
+
+**Стандартный режим:**
+```
+E = Σ log₂(|category_i|) + (L - k) × log₂(|pool|) + log₂(C(L, k))
+```
+где `k` — количество обязательных категорий, `L` — длина пароля.
+
+**XKCD режим:**
+```
+E = words × log₂(dict_size) + [random_caps × words] + [log₂(number_range)]
+```
+
+**Фонетический режим:**
+```
+E = syllables × (log₂(|consonants|) × c_count + log₂(|vowels|) × v_count)
+```
+
+### Наборы символов
+
+| Набор           | Латиница    | Кириллица   |
+| --------------- | ----------- | ----------- |
+| Нижний регистр  | 26 символов | 33 символа  |
+| Верхний регистр | 26 символов | 33 символа  |
+| Цифры           | 10 символов | 10 символов |
+| Спецсимволы     | 32 символа  | 32 символа  |
+
+### Фонетические паттерны
+
+| Паттерн | Структура                | Энтропия (лат.) |
+| ------- | ------------------------ | --------------- |
+| CV      | согласная + гласная      | ~6.49 бит       |
+| CVC     | согл. + гласн. + согл.   | ~10.66 бит      |
+| CVCC    | согл. + гласн. + 2 согл. | ~14.83 бит      |
+| CCVC    | 2 согл. + гласн. + согл. | ~14.83 бит      |
+
+## 🚀 Установка и запуск
+
+### Требования
+
+- Node.js 18+
+- npm или pnpm
+
+### Локальный запуск
+
+```bash
+# Клонирование репозитория
+git clone https://github.com/hermanguilliman/passwordgenerator.git
+cd passwordgenerator
+
+# Установка зависимостей
+npm install
+
+# Запуск dev-сервера
+npm run dev
+```
+
+Приложение будет доступно по адресу `http://localhost:5173`
+
+### Сборка для продакшена
+
+```bash
+npm run build
+npm run preview  # Локальный просмотр собранной версии
+```
+
+## 🔒 Безопасность
+
+- Пароли генерируются локально в браузере
+- Никакие данные не отправляются на сервер
+- История хранится только в localStorage устройства
+- Используется Web Crypto API (не `Math.random()`)
+
+## 📊 Шкала энтропии
+
+| Биты    | Оценка            | Время взлома (10¹⁰/сек) |
+| ------- | ----------------- | ----------------------- |
+| < 40    | Слабый            | Минуты — часы           |
+| 40–60   | Базовый           | Дни — годы              |
+| 60–80   | Хороший           | Тысячи лет              |
+| 80–100  | Сильный           | Миллионы лет            |
+| 100–128 | Очень сильный     | Миллиарды лет           |
+| 128+    | Криптографический | Неподбираем             |
