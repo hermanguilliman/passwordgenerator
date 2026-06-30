@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vite.dev/config/
+
 export default defineConfig({
   plugins: [
     svelte(),
@@ -18,7 +18,7 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: 'pwa-192x192.png', // Убедитесь, что иконки есть в public/
+            src: 'pwa-192x192.png', 
             sizes: '192x192',
             type: 'image/png'
           },
@@ -31,4 +31,5 @@ export default defineConfig({
       }
     })
   ],
+  base: '/passwordgenerator/'
 })
