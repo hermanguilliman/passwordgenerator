@@ -124,8 +124,6 @@
             on:click={() => applyTheme(theme === "dark" ? "light" : "dark")}
         >
             <span class="track">
-                <span class="lab lab-dark">DARK</span>
-                <span class="lab lab-light">LIGHT</span>
                 <span class="thumb">
                     <img
                         class="skull"
@@ -276,7 +274,11 @@
         height: 44px;
         border: 2px solid var(--border-visible);
         border-radius: 999px;
-        background: var(--surface-raised);
+        background-color: var(--surface-raised);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        overflow: hidden;
         transition: border-color 0.2s var(--motion);
     }
 
@@ -284,31 +286,12 @@
         border-color: var(--accent);
     }
 
-    .lab {
-        position: absolute;
-        font-family: var(--font-mono);
-        font-size: var(--label);
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        color: var(--text-disabled);
-        transition:
-            opacity 0.2s var(--motion),
-            color 0.2s var(--motion);
+    /* Фон тумблера — пейзаж, соответствующий активной теме */
+    .skull-switch.dark .track {
+        background-image: url("/night.png");
     }
-    .lab-dark {
-        left: 14px;
-    }
-    .lab-light {
-        right: 12px;
-    }
-    /* Подпись под бегунком прячется, противоположная — подсвечивается */
-    .skull-switch.dark .lab-dark,
-    .skull-switch.light .lab-light {
-        opacity: 0;
-    }
-    .skull-switch.dark .lab-light,
-    .skull-switch.light .lab-dark {
-        color: var(--text-primary);
+    .skull-switch.light .track {
+        background-image: url("/day.png");
     }
 
     .thumb {
