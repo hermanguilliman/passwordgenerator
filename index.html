@@ -2,6 +2,24 @@
 <html lang="ru">
     <head>
         <meta charset="UTF-8" />
+        <script>
+            // Инициализация темы до отрисовки (без мигания)
+            (function () {
+                try {
+                    var t = localStorage.getItem("gpass_theme");
+                    if (!t) {
+                        t = window.matchMedia(
+                            "(prefers-color-scheme: light)"
+                        ).matches
+                            ? "light"
+                            : "dark";
+                    }
+                    document.documentElement.setAttribute("data-theme", t);
+                } catch (e) {
+                    document.documentElement.setAttribute("data-theme", "dark");
+                }
+            })();
+        </script>
         <link rel="icon" type="image/svg+xml" href="/icon_512.png" />
         <link
             rel="icon"
@@ -24,9 +42,8 @@
         <link rel="icon" sizes="512x512" href="/android-chrome-512x512.png" />
         <meta
             name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"
+            content="width=device-width, initial-scale=1.0"
         />
-        <meta name="theme-color" content="#000000" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
             name="apple-mobile-web-app-status-bar-style"
@@ -37,7 +54,20 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
         />
-        <meta name="theme-color" content="#9ef523" />
+        <meta name="theme-color" content="#000000" />
+
+        <!-- Шрифты дизайн-системы -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossorigin
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Doto:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+
         <meta property="og:title" content="Генератор паролей" />
         <meta
             property="og:description"
@@ -46,10 +76,6 @@
         <meta
             property="og:image"
             content="https://guillmanpass.netlify.app//icon_512.png"
-        />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1"
         />
         <meta name="yandex-verification" content="fa4e4208c000c31a" />
         <title>G-PASS TERMINAL</title>

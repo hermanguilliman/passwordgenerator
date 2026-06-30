@@ -1,96 +1,187 @@
-/* Импортируем JetBrains Mono из Google Fonts */
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap");
+/* ============================================================
+   G-PASS TERMINAL — Nothing-inspired design system
+   Монохромная база + зелёный сигнальный акцент (#9ef523)
+   Шрифты подключаются в index.html (Doto, Space Grotesk, Space Mono)
+   ============================================================ */
 
 :root {
-    --toxic-green: #9ef523;
-    --toxic-green-dim: #9ef52340;
-    --toxic-green-dark: #2a3a10;
-    --dark-background: #050505;
-    --panel-background: #0f0f0f;
-    --text-color: #9ef523;
-    --error-color: #ff3333;
-    --scanline-color: rgba(0, 0, 0, 0.5);
+    /* --- Шрифты --- */
+    --font-display: "Doto", "Space Mono", monospace;
+    --font-sans: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+    --font-mono: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+    /* Совместимость со старыми ссылками */
+    --font-main: var(--font-mono);
 
-    /* Переключаемся на новый шрифт */
-    --font-main: "JetBrains Mono", monospace;
+    /* --- Типографика (rem для доступности при зуме) ---
+       Увеличены ради читаемости (в т.ч. при астигматизме) */
+    --display-xl: clamp(3.25rem, 9vw, 4.75rem);
+    --display-lg: clamp(2.5rem, 6.5vw, 3.25rem);
+    --display-md: clamp(1.875rem, 4.5vw, 2.375rem);
+    --heading: 1.625rem;
+    --subheading: 1.25rem;
+    --body: 1.0625rem;
+    --body-sm: 0.9375rem;
+    --caption: 0.8125rem;
+    --label: 0.75rem;
+
+    /* --- Отступы (база 8px) --- */
+    --space-2xs: 2px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+    --space-4xl: 96px;
+
+    /* --- Тёмная тема (по умолчанию) ---
+       Контраст повышен для лучшей читаемости */
+    --black: #000000;
+    --surface: #101010;
+    --surface-raised: #1f1f1f;
+    --border: #2c2c2c;
+    --border-visible: #444444;
+    --text-disabled: #828282;
+    --text-secondary: #b4b4b4;
+    --text-primary: #f0f0f0;
+    --text-display: #ffffff;
+
+    /* Акцент-сигнал (зелёный бренда) */
+    --accent: #9ef523;
+    --accent-ink: #9ef523; /* акцент как текст/обводка */
+    --accent-contrast: #000000; /* текст на акцентной заливке */
+
+    /* Статусы данных (энтропия) */
+    --st-weak: #d71921;
+    --st-fair: #d4a843;
+    --st-strong: #9ef523;
+
+    /* Прочее */
+    --segment-empty: var(--border);
+    --dot-grid: rgba(255, 255, 255, 0.04);
+    --motion: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* --- Светлая тема --- */
+:root[data-theme="light"] {
+    --black: #f5f5f5;
+    --surface: #ffffff;
+    --surface-raised: #ededed;
+    --border: #dcdcdc;
+    --border-visible: #b0b0b0;
+    --text-disabled: #767676;
+    --text-secondary: #505050;
+    --text-primary: #141414;
+    --text-display: #000000;
+
+    --accent: #9ef523;
+    --accent-ink: #4e7d0a; /* читаемый зелёный на светлом */
+    --accent-contrast: #000000;
+
+    --st-weak: #c20e16;
+    --st-fair: #8a6d18;
+    --st-strong: #4e7d0a;
+
+    --segment-empty: #e0e0e0;
+    --dot-grid: rgba(0, 0, 0, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
 }
 
 html,
 body {
-    touch-action: manipulation;
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100%;
-    font-family: var(--font-main); /* Применяем шрифт */
-    background-color: var(--dark-background);
-    color: var(--text-color);
-    overflow: hidden;
-    font-weight: 500; /* Чуть жирнее для лучшей читаемости на черном */
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    background-color: var(--black);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    /* Индустриальная точечная текстура фона */
+    background-image: radial-gradient(
+        circle,
+        var(--dot-grid) 1px,
+        transparent 1px
+    );
+    background-size: 22px 22px;
+    transition:
+        background-color 0.3s var(--motion),
+        color 0.3s var(--motion);
 }
 
 #app {
     margin: 0 auto;
-    height: 100dvh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
     position: relative;
     z-index: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-/* Эффект старого монитора (Scanlines) - сделали чуть мягче для нового шрифта */
-body::before {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(
-        to bottom,
-        rgba(18, 16, 16, 0) 50%,
-        rgba(0, 0, 0, 0.15) 50%
-    );
-    background-size: 100% 4px;
-    z-index: 999;
-    pointer-events: none;
-    position: fixed;
 }
 
 main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    max-width: 1200px;
+    padding: var(--space-xl) var(--space-lg);
+    max-width: 1240px;
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
 }
 
-/* Адаптив: уменьшаем отступы на мобильных */
 @media (max-width: 600px) {
     main {
-        padding: 0.5rem;
+        padding: var(--space-md) var(--space-sm);
     }
 }
 
-/* Кастомизация скроллбара */
+/* --- Выделение текста --- */
+::selection {
+    background: var(--accent);
+    color: var(--accent-contrast);
+}
+
+/* --- Скроллбар --- */
 ::-webkit-scrollbar {
     width: 10px;
+    height: 10px;
 }
 ::-webkit-scrollbar-track {
-    background: var(--dark-background);
-    border-left: 1px solid var(--toxic-green-dark);
+    background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: var(--toxic-green-dark);
-    border: 1px solid var(--toxic-green);
+    background: var(--border-visible);
+    border: 2px solid var(--black);
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--toxic-green);
+    background: var(--text-disabled);
+}
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-visible) transparent;
+}
+
+/* --- Фокус для доступности (клавиатура) --- */
+:focus-visible {
+    outline: 2px solid var(--accent-ink);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }

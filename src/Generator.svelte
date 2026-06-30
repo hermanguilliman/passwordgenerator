@@ -28,7 +28,7 @@
     let randomCapitalization: boolean = false;
     let numberRange: "10" | "100" | "1000" | "10000" = "100";
 
-    // Phonetic Mode (НОВОЕ!)
+    // Phonetic Mode
     let syllablesPerWord: number = 3;
     let phoneticWordCount: number = 3;
     let phoneticSeparator: string = "-";
@@ -48,12 +48,17 @@
 
     // Энтропия
     let entropyBits: number = 0;
-    let entropyColor: string = "var(--toxic-green)";
+    let entropyColor: string = "var(--accent-ink)";
     let entropyLabel: string = "БЕЗОПАСНОСТЬ: ВЫЧИСЛЕНИЕ...";
     let entropyPercent: number = 0;
     let entropyDetails: { label: string; bits: number }[] = [];
     let crackTime: string = "";
     let showDetails: boolean = false;
+
+    // Кол-во сегментов прогресс-бара энтропии
+    const ENTROPY_SEGMENTS = 36;
+    const ENTROPY_MAX = 256;
+    const THRESHOLDS = [50, 80, 128, 192];
 
     // --- Константы символов ---
     const LATIN_LOWER = "abcdefghijklmnopqrstuvwxyz";
@@ -63,7 +68,7 @@
     const NUMBERS = "0123456789";
     const SYMBOLS = "!@#$%^&*()_+-=[]{}|;':\",./<>?`~\\";
 
-    // Фонетические константы (НОВОЕ!)
+    // Фонетические константы
     const LATIN_CONSONANTS = "bcdfghjklmnprstvwz";
     const LATIN_VOWELS = "aeiou";
     const CYRILLIC_CONSONANTS = "бвгджзклмнпрстфхцчш";
@@ -71,43 +76,43 @@
 
     // --- Словарь XKCD ---
     const WORD_SOURCE = `
-        correct horse battery staple system hacking cyber neural matrix logic 
-        ghost shell neon laser future data access denied granted protocol bunker 
-        vector pixel grid node signal router server cloud storm rain blade runner 
-        android electric dream sheep memory core virus trojan firewall proxy token 
-        chain block cipher hash salt key public private tunnel bridge gate star 
-        orbit gravity quantum physics plasma void galaxy nebula cosmos alien radio 
-        frequency bandwidth analog digital binary code script python rust java 
-        linux unix kernel root sudo admin user guest login logout abort retry 
-        fail error warning debug stack heap queue array list graph tree forest 
-        swamp mountain river ocean city tokyo night street car bike drone robot 
-        mech armor weapon shield sword magic mana health power energy fusion 
-        nuclear atomic flight space ship pilot drive warp speed light sound sonic 
-        wave pulse beat rhythm bass synth drums guitar text chat bot learning 
-        deep mining crypto money cash credit debit bank vault safe lock pick door 
-        wall floor roof window glass steel iron copper gold silver bronze metal 
-        alloy carbon silicon fiber optic lens camera eye vision sight ear hear 
-        listen speak talk shout whisper secret hidden dark black white red green 
-        blue cyan magenta yellow orange purple violet indigo gamma sensor motor 
-        engine gear wheel piston pump valve pipe tube wire cable circuit chip 
-        board card slot port socket jack plug connect online offline remote local 
-        host domain time date year month hour minute second alpha beta delta 
-        epsilon theta lambda sigma omega zero one two three four five six seven 
-        eight nine hundred thousand million billion limit integral derivative 
-        tensor chaos entropy force mass acceleration velocity distance dimension 
-        universe string theory relativity electromagnetic interaction boson 
-        fermion lepton quark gluon photon field particle duality uncertainty 
-        evolution mutation selection gene cell tissue organ body brain heart lung 
-        liver kidney stomach skin bone blood nerve neuron synapse receptor enzyme 
-        protein water fire earth wind spirit soul mind thought idea concept meme 
-        culture art music video image picture photo chart map plan design build 
-        create destroy fix break crash burn freeze melt solid liquid state phase 
-        transition thermodynamics mechanics optics acoustics electronics robotics 
-        genetics informatics cybernetics control automation intelligence wisdom 
-        knowledge information network internet web site page link thread process 
-        task worker service daemon command terminal batch module library framework 
-        platform console render shader texture model mesh collision layer scene 
-        asset resource package bundle version release patch feature glitch bug 
+        correct horse battery staple system hacking cyber neural matrix logic
+        ghost shell neon laser future data access denied granted protocol bunker
+        vector pixel grid node signal router server cloud storm rain blade runner
+        android electric dream sheep memory core virus trojan firewall proxy token
+        chain block cipher hash salt key public private tunnel bridge gate star
+        orbit gravity quantum physics plasma void galaxy nebula cosmos alien radio
+        frequency bandwidth analog digital binary code script python rust java
+        linux unix kernel root sudo admin user guest login logout abort retry
+        fail error warning debug stack heap queue array list graph tree forest
+        swamp mountain river ocean city tokyo night street car bike drone robot
+        mech armor weapon shield sword magic mana health power energy fusion
+        nuclear atomic flight space ship pilot drive warp speed light sound sonic
+        wave pulse beat rhythm bass synth drums guitar text chat bot learning
+        deep mining crypto money cash credit debit bank vault safe lock pick door
+        wall floor roof window glass steel iron copper gold silver bronze metal
+        alloy carbon silicon fiber optic lens camera eye vision sight ear hear
+        listen speak talk shout whisper secret hidden dark black white red green
+        blue cyan magenta yellow orange purple violet indigo gamma sensor motor
+        engine gear wheel piston pump valve pipe tube wire cable circuit chip
+        board card slot port socket jack plug connect online offline remote local
+        host domain time date year month hour minute second alpha beta delta
+        epsilon theta lambda sigma omega zero one two three four five six seven
+        eight nine hundred thousand million billion limit integral derivative
+        tensor chaos entropy force mass acceleration velocity distance dimension
+        universe string theory relativity electromagnetic interaction boson
+        fermion lepton quark gluon photon field particle duality uncertainty
+        evolution mutation selection gene cell tissue organ body brain heart lung
+        liver kidney stomach skin bone blood nerve neuron synapse receptor enzyme
+        protein water fire earth wind spirit soul mind thought idea concept meme
+        culture art music video image picture photo chart map plan design build
+        create destroy fix break crash burn freeze melt solid liquid state phase
+        transition thermodynamics mechanics optics acoustics electronics robotics
+        genetics informatics cybernetics control automation intelligence wisdom
+        knowledge information network internet web site page link thread process
+        task worker service daemon command terminal batch module library framework
+        platform console render shader texture model mesh collision layer scene
+        asset resource package bundle version release patch feature glitch bug
         static noise shadow echo silence phantom mirage
     `;
 
@@ -168,7 +173,7 @@
         const categories = getActiveCategories();
 
         if (categories.length === 0) {
-            error = "ОШИБКА: ВЫБЕРИТЕ ХОТЯ БЫ ОДНУ КАТЕГОРИЮ";
+            error = "ВЫБЕРИТЕ ХОТЯ БЫ ОДНУ КАТЕГОРИЮ";
             password = "";
             return;
         }
@@ -228,7 +233,7 @@
         addToHistory(password);
     };
 
-    // НОВОЕ! Генерация фонетического пароля
+    // Генерация фонетического пароля
     const generatePhonetic = (): void => {
         const consonants = useCyrillicPhonetic
             ? CYRILLIC_CONSONANTS
@@ -454,7 +459,7 @@
         entropyBits = totalBits;
     };
 
-    // НОВОЕ! Расчет энтропии для фонетического режима
+    // Расчет энтропии для фонетического режима
     const calculatePhoneticEntropy = (): void => {
         let totalBits = 0;
         const syllableBits = getPhoneticSyllableBits();
@@ -496,48 +501,45 @@
     const updateEntropyDisplay = (): void => {
         const bits = entropyBits;
 
-        if (bits < 20) {
-            entropyColor = "#ff0000";
+        if (bits < 28) {
+            entropyColor = "var(--st-weak)";
             entropyLabel = "ВЗЛОМ: МГНОВЕННЫЙ";
-        } else if (bits < 30) {
-            entropyColor = "#ff2200";
-            entropyLabel = "ВЗЛОМ: СЕКУНДЫ";
         } else if (bits < 40) {
-            entropyColor = "#ff4400";
-            entropyLabel = "ВЗЛОМ: МИНУТЫ";
+            entropyColor = "var(--st-weak)";
+            entropyLabel = "ВЗЛОМ: СЕКУНДЫ";
         } else if (bits < 50) {
-            entropyColor = "#ff7700";
-            entropyLabel = "БЕЗОПАСНОСТЬ: СЛАБАЯ";
+            entropyColor = "var(--st-weak)";
+            entropyLabel = "ВЗЛОМ: МИНУТЫ";
         } else if (bits < 60) {
-            entropyColor = "#ffaa00";
-            entropyLabel = "БЕЗОПАСНОСТЬ: БАЗОВАЯ";
+            entropyColor = "var(--st-fair)";
+            entropyLabel = "БЕЗОПАСНОСТЬ: СЛАБАЯ";
         } else if (bits < 75) {
-            entropyColor = "#ffdd00";
+            entropyColor = "var(--st-fair)";
             entropyLabel = "БЕЗОПАСНОСТЬ: УМЕРЕННАЯ";
         } else if (bits < 90) {
-            entropyColor = "#ccff00";
+            entropyColor = "var(--st-strong)";
             entropyLabel = "БЕЗОПАСНОСТЬ: ХОРОШАЯ";
         } else if (bits < 112) {
-            entropyColor = "#88ff00";
+            entropyColor = "var(--st-strong)";
             entropyLabel = "БЕЗОПАСНОСТЬ: СИЛЬНАЯ";
         } else if (bits < 128) {
-            entropyColor = "#44ff44";
+            entropyColor = "var(--st-strong)";
             entropyLabel = "БЕЗОПАСНОСТЬ: ОЧЕНЬ СИЛЬНАЯ";
         } else if (bits < 160) {
-            entropyColor = "#00ffaa";
+            entropyColor = "var(--st-strong)";
             entropyLabel = "КРИПТО: 2^80 ОПЕРАЦИЙ";
         } else if (bits < 192) {
-            entropyColor = "#00ffff";
+            entropyColor = "var(--st-strong)";
             entropyLabel = "КРИПТО: 2^96 ОПЕРАЦИЙ";
         } else if (bits < 256) {
-            entropyColor = "#aa88ff";
+            entropyColor = "var(--st-strong)";
             entropyLabel = "КРИПТО: AES-192+";
         } else {
-            entropyColor = "#ffffff";
+            entropyColor = "var(--text-display)";
             entropyLabel = "КРИПТО: AES-256+";
         }
 
-        entropyPercent = Math.min((bits / 256) * 100, 100);
+        entropyPercent = Math.min((bits / ENTROPY_MAX) * 100, 100);
     };
 
     const calculateCrackTime = (): void => {
@@ -593,7 +595,7 @@
         entropyBits = 0;
         entropyDetails = [{ label: "ВОССТАНОВЛЕНО ИЗ ЖУРНАЛА", bits: 0 }];
         entropyLabel = "ЭНТРОПИЯ: НЕИЗВЕСТНА";
-        entropyColor = "#888888";
+        entropyColor = "var(--text-secondary)";
         entropyPercent = 0;
         crackTime = "Н/Д";
         copyToClipboard();
@@ -620,10 +622,11 @@
         showQR = true;
         await tick();
         if (qrCanvas) {
+            // QR всегда чёрный на белом — максимальная сканируемость в любой теме
             QRCode.toCanvas(qrCanvas, password, {
                 width: 300,
                 margin: 2,
-                color: { dark: "#9ef523", light: "#000000" },
+                color: { dark: "#000000", light: "#ffffff" },
                 errorCorrectionLevel: "M",
             });
         }
@@ -639,344 +642,308 @@
     const toggleDetails = (): void => {
         showDetails = !showDetails;
     };
-
-    // Получение информации о паттерне для UI
-    const getPatternInfo = (pattern: string): string => {
-        const consonants = useCyrillicPhonetic
-            ? CYRILLIC_CONSONANTS
-            : LATIN_CONSONANTS;
-        const vowels = useCyrillicPhonetic ? CYRILLIC_VOWELS : LATIN_VOWELS;
-        switch (pattern) {
-            case "cv":
-                return `C[${consonants.length}]+V[${vowels.length}]`;
-            case "cvc":
-                return `C+V+C`;
-            case "cvcc":
-                return `C+V+C+C`;
-            case "ccvc":
-                return `C+C+V+C`;
-            default:
-                return "";
-        }
-    };
 </script>
 
-<div class="cyber-container">
-    <div class="panel main-panel">
-        <div class="panel-header">
-            <div class="tabs">
+<div class="app-grid">
+    <section class="card generator">
+        <!-- Режимы -->
+        <div class="seg-control modes" role="tablist" aria-label="Режим генерации">
+            <button
+                role="tab"
+                aria-selected={mode === "standard"}
+                class:active={mode === "standard"}
+                on:click={() => {
+                    mode = "standard";
+                    generate();
+                }}>СТАНДАРТ</button
+            >
+            <button
+                role="tab"
+                aria-selected={mode === "xkcd"}
+                class:active={mode === "xkcd"}
+                on:click={() => {
+                    mode = "xkcd";
+                    generate();
+                }}>XKCD</button
+            >
+            <button
+                role="tab"
+                aria-selected={mode === "phonetic"}
+                class:active={mode === "phonetic"}
+                on:click={() => {
+                    mode = "phonetic";
+                    generate();
+                }}>ФОНЕТИК</button
+            >
+        </div>
+
+        <!-- Дисплей пароля -->
+        <div class="pw-block">
+            <div class="row-label">
+                <span class="label">// ПАРОЛЬ</span>
+                <span class="label muted">{password.length} СИМВ.</span>
+            </div>
+            <div class="pw-value" class:flash={copied}>
+                {password || "ИНИЦИАЛИЗАЦИЯ..."}
+            </div>
+            <div class="pw-actions">
                 <button
-                    class:active={mode === "standard"}
-                    on:click={() => {
-                        mode = "standard";
-                        generate();
-                    }}
+                    class="btn btn-primary"
+                    class:ok={copied}
+                    on:click={copyToClipboard}
                 >
-                    [ СТАНДАРТ ]
+                    {copied ? "СКОПИРОВАНО" : "КОПИРОВАТЬ"}
                 </button>
                 <button
-                    class:active={mode === "xkcd"}
-                    on:click={() => {
-                        mode = "xkcd";
-                        generate();
-                    }}
+                    class="btn btn-secondary"
+                    on:click={generateQR}
+                    title="QR-код">QR</button
                 >
-                    [ XKCD ]
-                </button>
                 <button
-                    class:active={mode === "phonetic"}
-                    on:click={() => {
-                        mode = "phonetic";
-                        generate();
-                    }}
+                    class="btn btn-secondary icon"
+                    on:click={generate}
+                    title="Обновить"
+                    aria-label="Сгенерировать заново">↻</button
                 >
-                    [ ФОНЕТИК ]
-                </button>
             </div>
         </div>
 
-        <div class="display-section">
-            <div class="password-display-wrapper">
-                <div class="password-label">ВАШ НОВЫЙ ПАРОЛЬ</div>
-                <div class="password-field" class:pulse={copied}>
-                    {password || "ИНИЦИАЛИЗАЦИЯ..."}
+        <!-- Инструмент энтропии -->
+        <div class="entropy">
+            <div class="entropy-top">
+                <div class="entropy-hero">
+                    <span class="entropy-num" style="color: {entropyColor}"
+                        >{entropyBits.toFixed(1)}</span
+                    >
+                    <span class="entropy-unit">БИТ</span>
                 </div>
-                <div class="actions">
-                    <button
-                        class="action-btn copy"
-                        on:click={copyToClipboard}
-                        class:success={copied}
-                    >
-                        {copied ? "СКОПИРОВАНО" : "КОПИРОВАТЬ"}
-                    </button>
-                    <button
-                        class="action-btn qr"
-                        on:click={generateQR}
-                        title="QR-код">QR</button
-                    >
-                    <button
-                        class="action-btn refresh"
-                        on:click={generate}
-                        title="Обновить">↻</button
-                    >
-                </div>
-            </div>
-        </div>
-
-        <!-- Панель энтропии -->
-        <div class="entropy-section">
-            <div class="entropy-header">
-                <span
-                    class="entropy-status"
-                    style="color: {entropyColor}; text-shadow: 0 0 8px {entropyColor};"
+                <span class="entropy-status" style="color: {entropyColor}"
+                    >{entropyLabel}</span
                 >
-                    {entropyLabel}
-                </span>
-                <span class="entropy-value" style="color: {entropyColor}">
-                    {entropyBits.toFixed(2)} БИТ
-                </span>
             </div>
 
-            <div class="entropy-track">
-                <div
-                    class="entropy-fill"
-                    style="width: {entropyPercent}%; background: {entropyColor}; 
-                           box-shadow: 0 0 12px {entropyColor}, inset 0 0 8px rgba(255,255,255,0.2);"
-                ></div>
-                <div class="marker" style="left: {(50 / 256) * 100}%">
-                    <span>50</span>
+            <!-- Сегментный прогресс-бар -->
+            <div class="bar">
+                <div class="segments" style="--c: {entropyColor}">
+                    {#each Array(ENTROPY_SEGMENTS) as _, i}
+                        <span
+                            class="seg"
+                            class:filled={i <
+                                Math.round(
+                                    (entropyPercent / 100) * ENTROPY_SEGMENTS
+                                )}
+                        ></span>
+                    {/each}
                 </div>
-                <div class="marker" style="left: {(80 / 256) * 100}%">
-                    <span>80</span>
-                </div>
-                <div class="marker" style="left: {(128 / 256) * 100}%">
-                    <span>128</span>
-                </div>
-                <div class="marker" style="left: {(192 / 256) * 100}%">
-                    <span>192</span>
+                <div class="ticks">
+                    {#each THRESHOLDS as t}
+                        <span
+                            class="tick"
+                            style="left: {(t / ENTROPY_MAX) * 100}%">{t}</span
+                        >
+                    {/each}
                 </div>
             </div>
 
-            <div class="crack-info">
-                <span class="crack-label">ВРЕМЯ ПОДБОРА [10^10/сек]:</span>
-                <span class="crack-value" style="color: {entropyColor}"
+            <!-- Время подбора -->
+            <div class="stat-row">
+                <span class="label">ВРЕМЯ ПОДБОРА · 10¹⁰/С</span>
+                <span class="stat-val" style="color: {entropyColor}"
                     >{crackTime}</span
                 >
             </div>
 
             <!-- Детализация -->
-            <div class="details-section">
-                <button class="details-toggle" on:click={toggleDetails}>
-                    <span class="toggle-icon"
-                        >{showDetails ? "[-]" : "[+]"}</span
-                    >
-                    РАСЧЁТ ЭНТРОПИИ
-                </button>
+            <button class="details-toggle" on:click={toggleDetails}>
+                <span class="ic">{showDetails ? "[−]" : "[+]"}</span>
+                РАСЧЁТ ЭНТРОПИИ
+            </button>
 
-                {#if showDetails && entropyDetails.length > 0}
-                    <div class="details-content">
-                        {#each entropyDetails as detail, i}
-                            <div
-                                class="detail-row"
-                                class:last={i === entropyDetails.length - 1}
-                            >
-                                <span class="detail-label">{detail.label}</span>
-                                <span class="detail-dots"></span>
-                                <span class="detail-bits"
-                                    >{detail.bits.toFixed(2)}</span
-                                >
-                            </div>
-                        {/each}
-                        <div class="detail-row total">
-                            <span class="detail-label">ИТОГО</span>
-                            <span class="detail-dots"></span>
-                            <span class="detail-bits"
-                                >{entropyBits.toFixed(2)} БИТ</span
-                            >
+            {#if showDetails && entropyDetails.length > 0}
+                <div class="breakdown">
+                    {#each entropyDetails as detail}
+                        <div class="brk-row">
+                            <span class="l">{detail.label}</span>
+                            <span class="d"></span>
+                            <span class="v">{detail.bits.toFixed(2)}</span>
                         </div>
+                    {/each}
+                    <div class="brk-row total">
+                        <span class="l">ИТОГО</span>
+                        <span class="d"></span>
+                        <span class="v">{entropyBits.toFixed(2)} БИТ</span>
                     </div>
-                {/if}
-            </div>
+                </div>
+            {/if}
         </div>
 
-        <!-- Настройки -->
-        <div class="settings-section">
-            <div class="section-header">// НАСТРОЙКИ</div>
+        <!-- Параметры -->
+        <div class="settings">
+            <div class="section-label">// ПАРАМЕТРЫ</div>
 
             {#if mode === "standard"}
-                <div class="setting-group">
-                    <div class="cyrillic-switch">
-                        <label class="switch-container">
-                            <input
-                                type="checkbox"
-                                bind:checked={useCyrillic}
-                                on:change={handleOptionChange}
-                            />
-                            <span class="switch-track">
-                                <span class="switch-thumb"></span>
-                                <span class="label-off"
-                                    >LAT [{LATIN_LOWER.length * 2}]</span
-                                >
-                                <span class="label-on"
-                                    >КИР [{CYRILLIC_LOWER.length * 2}]</span
-                                >
-                            </span>
-                        </label>
+                <div class="field">
+                    <span class="label">АЛФАВИТ</span>
+                    <div class="seg-control block">
+                        <button
+                            class:active={!useCyrillic}
+                            on:click={() => {
+                                useCyrillic = false;
+                                generate();
+                            }}
+                            >LAT <span class="count"
+                                >{LATIN_LOWER.length * 2}</span
+                            ></button
+                        >
+                        <button
+                            class:active={useCyrillic}
+                            on:click={() => {
+                                useCyrillic = true;
+                                generate();
+                            }}
+                            >КИР <span class="count"
+                                >{CYRILLIC_LOWER.length * 2}</span
+                            ></button
+                        >
                     </div>
                 </div>
 
-                <div class="setting-group">
-                    <div class="slider-row">
-                        <div class="slider-header">
-                            <span class="slider-label">ДЛИНА</span>
-                            <span class="slider-value">{length}</span>
-                        </div>
-                        <input
-                            type="range"
-                            bind:value={length}
-                            min="4"
-                            max="64"
-                            on:input={generate}
-                        />
-                        <div class="slider-range">
-                            <span>4</span>
-                            <span>64</span>
-                        </div>
+                <div class="field">
+                    <div class="field-head">
+                        <span class="label">ДЛИНА</span>
+                        <span class="field-val">{length}</span>
                     </div>
+                    <input
+                        type="range"
+                        bind:value={length}
+                        min="4"
+                        max="64"
+                        on:input={generate}
+                        aria-label="Длина пароля"
+                    />
+                    <div class="range-minmax"><span>4</span><span>64</span></div>
                 </div>
 
-                <div class="setting-group">
-                    <div class="checkbox-grid">
-                        <label class="cyber-check">
+                <div class="field">
+                    <div class="check-grid">
+                        <label class="check">
                             <input
                                 type="checkbox"
                                 bind:checked={includeLowercase}
                                 on:change={handleOptionChange}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                {useCyrillic ? "а-я" : "a-z"}
-                                <span class="char-count"
-                                    >[{useCyrillic
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >{useCyrillic ? "а-я" : "a-z"}
+                                <span class="count"
+                                    >{useCyrillic
                                         ? CYRILLIC_LOWER.length
-                                        : LATIN_LOWER.length}]</span
-                                >
-                            </span>
+                                        : LATIN_LOWER.length}</span
+                                ></span
+                            >
                         </label>
-                        <label class="cyber-check">
+                        <label class="check">
                             <input
                                 type="checkbox"
                                 bind:checked={includeUppercase}
                                 on:change={handleOptionChange}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                {useCyrillic ? "А-Я" : "A-Z"}
-                                <span class="char-count"
-                                    >[{useCyrillic
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >{useCyrillic ? "А-Я" : "A-Z"}
+                                <span class="count"
+                                    >{useCyrillic
                                         ? CYRILLIC_UPPER.length
-                                        : LATIN_UPPER.length}]</span
-                                >
-                            </span>
+                                        : LATIN_UPPER.length}</span
+                                ></span
+                            >
                         </label>
-                        <label class="cyber-check">
+                        <label class="check">
                             <input
                                 type="checkbox"
                                 bind:checked={includeNumbers}
                                 on:change={handleOptionChange}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                0-9
-                                <span class="char-count"
-                                    >[{NUMBERS.length}]</span
-                                >
-                            </span>
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >0-9
+                                <span class="count">{NUMBERS.length}</span></span
+                            >
                         </label>
-                        <label class="cyber-check">
+                        <label class="check">
                             <input
                                 type="checkbox"
                                 bind:checked={includeSymbols}
                                 on:change={handleOptionChange}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                !@#
-                                <span class="char-count"
-                                    >[{SYMBOLS.length}]</span
-                                >
-                            </span>
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >!@#
+                                <span class="count">{SYMBOLS.length}</span></span
+                            >
                         </label>
                     </div>
                 </div>
             {:else if mode === "xkcd"}
-                <!-- XKCD Mode -->
-                <div class="setting-group">
-                    <div class="slider-row">
-                        <div class="slider-header">
-                            <span class="slider-label">КОЛИЧЕСТВО СЛОВ</span>
-                            <span class="slider-value">{wordCount}</span>
-                            <span class="slider-hint"
-                                >~{(wordCount * BITS_PER_WORD).toFixed(1)} бит</span
-                            >
-                        </div>
-                        <input
-                            type="range"
-                            bind:value={wordCount}
-                            min="3"
-                            max="12"
-                            on:input={generate}
-                        />
-                        <div class="slider-range">
-                            <span>3</span>
-                            <span>12</span>
-                        </div>
+                <div class="field">
+                    <div class="field-head">
+                        <span class="label">КОЛИЧЕСТВО СЛОВ</span>
+                        <span class="field-val">{wordCount}</span>
+                        <span class="field-hint"
+                            >~{(wordCount * BITS_PER_WORD).toFixed(1)} бит</span
+                        >
                     </div>
+                    <input
+                        type="range"
+                        bind:value={wordCount}
+                        min="3"
+                        max="12"
+                        on:input={generate}
+                        aria-label="Количество слов"
+                    />
+                    <div class="range-minmax"><span>3</span><span>12</span></div>
                 </div>
 
-                <div class="setting-group">
-                    <div class="select-row">
-                        <span class="select-label">РАЗДЕЛИТЕЛЬ</span>
-                        <span class="select-hint">[+0 бит]</span>
-                        <select
-                            bind:value={separator}
-                            on:change={generate}
-                            class="cyber-select"
-                        >
-                            <option value="-">ТИРЕ [-]</option>
-                            <option value="_">НИЖНЕЕ [_]</option>
-                            <option value=".">ТОЧКА [.]</option>
-                            <option value=" ">ПРОБЕЛ [ ]</option>
-                            <option value="+">ПЛЮС [+]</option>
-                            <option value="">БЕЗ РАЗДЕЛИТЕЛЯ</option>
-                        </select>
-                    </div>
+                <div class="field">
+                    <span class="label">РАЗДЕЛИТЕЛЬ</span>
+                    <select
+                        bind:value={separator}
+                        on:change={generate}
+                        class="sel"
+                    >
+                        <option value="-">ТИРЕ [-]</option>
+                        <option value="_">НИЖНЕЕ [_]</option>
+                        <option value=".">ТОЧКА [.]</option>
+                        <option value=" ">ПРОБЕЛ [ ]</option>
+                        <option value="+">ПЛЮС [+]</option>
+                        <option value="">БЕЗ РАЗДЕЛИТЕЛЯ</option>
+                    </select>
                 </div>
 
-                <div class="setting-group">
-                    <div class="select-row">
-                        <span class="select-label">ДИАПАЗОН ЧИСЛА</span>
-                        <span class="select-hint"
-                            >[+{Math.log2(parseInt(numberRange)).toFixed(1)} бит]</span
+                <div class="field">
+                    <div class="field-head">
+                        <span class="label">ДИАПАЗОН ЧИСЛА</span>
+                        <span class="field-hint"
+                            >+{Math.log2(parseInt(numberRange)).toFixed(1)} бит</span
                         >
-                        <select
-                            bind:value={numberRange}
-                            on:change={generate}
-                            class="cyber-select"
-                            disabled={!includeNumberXKCD}
-                        >
-                            <option value="10">0-9</option>
-                            <option value="100">00-99</option>
-                            <option value="1000">000-999</option>
-                            <option value="10000">0000-9999</option>
-                        </select>
                     </div>
+                    <select
+                        bind:value={numberRange}
+                        on:change={generate}
+                        class="sel"
+                        disabled={!includeNumberXKCD}
+                    >
+                        <option value="10">0-9</option>
+                        <option value="100">00-99</option>
+                        <option value="1000">000-999</option>
+                        <option value="10000">0000-9999</option>
+                    </select>
                 </div>
 
-                <div class="setting-group">
-                    <div class="checkbox-grid xkcd-options">
+                <div class="field">
+                    <div class="check-grid cols-3">
                         <label
-                            class="cyber-check"
+                            class="check"
                             class:disabled={randomCapitalization}
                         >
                             <input
@@ -985,13 +952,13 @@
                                 disabled={randomCapitalization}
                                 on:change={handleOptionChange}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                Заглавные
-                                <span class="entropy-tag zero">[+0]</span>
-                            </span>
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >Заглавные
+                                <span class="tag zero">+0</span></span
+                            >
                         </label>
-                        <label class="cyber-check highlight">
+                        <label class="check">
                             <input
                                 type="checkbox"
                                 bind:checked={randomCapitalization}
@@ -1001,202 +968,189 @@
                                     handleOptionChange();
                                 }}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                Случ. регистр
-                                <span class="entropy-tag plus"
-                                    >[+{wordCount}]</span
-                                >
-                            </span>
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >Случ. регистр
+                                <span class="tag plus">+{wordCount}</span></span
+                            >
                         </label>
-                        <label class="cyber-check">
+                        <label class="check">
                             <input
                                 type="checkbox"
                                 bind:checked={includeNumberXKCD}
                                 on:change={handleOptionChange}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                Число
-                                <span class="entropy-tag plus"
-                                    >[+{Math.log2(
-                                        parseInt(numberRange)
-                                    ).toFixed(1)}]</span
-                                >
-                            </span>
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >Число
+                                <span class="tag plus"
+                                    >+{Math.log2(parseInt(numberRange)).toFixed(
+                                        1
+                                    )}</span
+                                ></span
+                            >
                         </label>
                     </div>
                 </div>
 
-                <div class="dict-info">
-                    <span class="dict-label">СЛОВАРЬ:</span>
-                    <span class="dict-value">{DICT_SIZE} СЛОВ</span>
-                    <span class="dict-separator">/</span>
-                    <span class="dict-value"
-                        >{BITS_PER_WORD.toFixed(4)} БИТ/СЛОВО</span
-                    >
+                <div class="data-row">
+                    <span>СЛОВАРЬ</span>
+                    <span class="hl">{DICT_SIZE} СЛОВ</span>
+                    <span class="sep">/</span>
+                    <span class="hl">{BITS_PER_WORD.toFixed(4)} БИТ/СЛОВО</span>
                 </div>
             {:else if mode === "phonetic"}
-
-                <div class="setting-group">
-                    <div class="cyrillic-switch">
-                        <label class="switch-container">
-                            <input
-                                type="checkbox"
-                                bind:checked={useCyrillicPhonetic}
-                                on:change={handleOptionChange}
-                            />
-                            <span class="switch-track">
-                                <span class="switch-thumb"></span>
-                                <span class="label-off"
-                                    >LAT [{LATIN_CONSONANTS.length}C+{LATIN_VOWELS.length}V]</span
-                                >
-                                <span class="label-on"
-                                    >КИР [{CYRILLIC_CONSONANTS.length}C+{CYRILLIC_VOWELS.length}V]</span
-                                >
-                            </span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="setting-group">
-                    <div class="select-row">
-                        <span class="select-label">ПАТТЕРН СЛОГА</span>
-                        <span class="select-hint"
-                            >[{getPhoneticSyllableBits().toFixed(2)} бит/слог]</span
+                <div class="field">
+                    <span class="label">АЛФАВИТ</span>
+                    <div class="seg-control block">
+                        <button
+                            class:active={!useCyrillicPhonetic}
+                            on:click={() => {
+                                useCyrillicPhonetic = false;
+                                generate();
+                            }}
+                            >LAT <span class="count"
+                                >{LATIN_CONSONANTS.length}C·{LATIN_VOWELS.length}V</span
+                            ></button
                         >
-                        <select
-                            bind:value={phoneticPattern}
-                            on:change={generate}
-                            class="cyber-select"
+                        <button
+                            class:active={useCyrillicPhonetic}
+                            on:click={() => {
+                                useCyrillicPhonetic = true;
+                                generate();
+                            }}
+                            >КИР <span class="count"
+                                >{CYRILLIC_CONSONANTS.length}C·{CYRILLIC_VOWELS.length}V</span
+                            ></button
                         >
-                            <option value="cv">CV (ба, ке, ми)</option>
-                            <option value="cvc">CVC (бак, кем, мир)</option>
-                            <option value="cvcc">CVCC (банк, керн)</option>
-                            <option value="ccvc">CCVC (стар, крик)</option>
-                        </select>
                     </div>
                 </div>
 
-                <div class="setting-group dual-sliders">
-                    <div class="slider-row">
-                        <div class="slider-header">
-                            <span class="slider-label">СЛОГОВ В СЛОВЕ</span>
-                            <span class="slider-value">{syllablesPerWord}</span>
-                        </div>
-                        <input
-                            type="range"
-                            bind:value={syllablesPerWord}
-                            min="2"
-                            max="6"
-                            on:input={generate}
-                        />
-                        <div class="slider-range">
-                            <span>2</span>
-                            <span>6</span>
-                        </div>
-                    </div>
-
-                    <div class="slider-row">
-                        <div class="slider-header">
-                            <span class="slider-label">КОЛИЧЕСТВО СЛОВ</span>
-                            <span class="slider-value">{phoneticWordCount}</span
-                            >
-                            <span class="slider-hint"
-                                >~{(
-                                    phoneticWordCount *
-                                    syllablesPerWord *
-                                    getPhoneticSyllableBits()
-                                ).toFixed(1)} бит</span
-                            >
-                        </div>
-                        <input
-                            type="range"
-                            bind:value={phoneticWordCount}
-                            min="2"
-                            max="6"
-                            on:input={generate}
-                        />
-                        <div class="slider-range">
-                            <span>2</span>
-                            <span>6</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="setting-group">
-                    <div class="select-row">
-                        <span class="select-label">РАЗДЕЛИТЕЛЬ</span>
-                        <select
-                            bind:value={phoneticSeparator}
-                            on:change={generate}
-                            class="cyber-select"
+                <div class="field">
+                    <div class="field-head">
+                        <span class="label">ПАТТЕРН СЛОГА</span>
+                        <span class="field-hint"
+                            >{getPhoneticSyllableBits().toFixed(2)} бит/слог</span
                         >
-                            <option value="-">ТИРЕ [-]</option>
-                            <option value="_">НИЖНЕЕ [_]</option>
-                            <option value=".">ТОЧКА [.]</option>
-                            <option value="">БЕЗ РАЗДЕЛИТЕЛЯ</option>
-                        </select>
                     </div>
+                    <select
+                        bind:value={phoneticPattern}
+                        on:change={generate}
+                        class="sel"
+                    >
+                        <option value="cv">CV (ба, ке, ми)</option>
+                        <option value="cvc">CVC (бак, кем, мир)</option>
+                        <option value="cvcc">CVCC (банк, керн)</option>
+                        <option value="ccvc">CCVC (стар, крик)</option>
+                    </select>
                 </div>
 
-                <div class="setting-group">
-                    <div class="checkbox-grid phonetic-options">
-                        <label class="cyber-check">
+                <div class="field">
+                    <div class="field-head">
+                        <span class="label">СЛОГОВ В СЛОВЕ</span>
+                        <span class="field-val">{syllablesPerWord}</span>
+                    </div>
+                    <input
+                        type="range"
+                        bind:value={syllablesPerWord}
+                        min="2"
+                        max="6"
+                        on:input={generate}
+                        aria-label="Слогов в слове"
+                    />
+                    <div class="range-minmax"><span>2</span><span>6</span></div>
+                </div>
+
+                <div class="field">
+                    <div class="field-head">
+                        <span class="label">КОЛИЧЕСТВО СЛОВ</span>
+                        <span class="field-val">{phoneticWordCount}</span>
+                        <span class="field-hint"
+                            >~{(
+                                phoneticWordCount *
+                                syllablesPerWord *
+                                getPhoneticSyllableBits()
+                            ).toFixed(1)} бит</span
+                        >
+                    </div>
+                    <input
+                        type="range"
+                        bind:value={phoneticWordCount}
+                        min="2"
+                        max="6"
+                        on:input={generate}
+                        aria-label="Количество слов"
+                    />
+                    <div class="range-minmax"><span>2</span><span>6</span></div>
+                </div>
+
+                <div class="field">
+                    <span class="label">РАЗДЕЛИТЕЛЬ</span>
+                    <select
+                        bind:value={phoneticSeparator}
+                        on:change={generate}
+                        class="sel"
+                    >
+                        <option value="-">ТИРЕ [-]</option>
+                        <option value="_">НИЖНЕЕ [_]</option>
+                        <option value=".">ТОЧКА [.]</option>
+                        <option value="">БЕЗ РАЗДЕЛИТЕЛЯ</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <div class="check-grid">
+                        <label class="check">
                             <input
                                 type="checkbox"
                                 bind:checked={phoneticCapitalize}
                                 on:change={handleOptionChange}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                Заглавные
-                                <span class="entropy-tag zero">[+0]</span>
-                            </span>
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >Заглавные
+                                <span class="tag zero">+0</span></span
+                            >
                         </label>
-                        <label class="cyber-check">
+                        <label class="check">
                             <input
                                 type="checkbox"
                                 bind:checked={phoneticIncludeNumber}
                                 on:change={handleOptionChange}
                             />
-                            <span class="check-box"></span>
-                            <span class="check-label">
-                                Число
-                                <span class="entropy-tag plus"
-                                    >[+{Math.log2(
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >Число
+                                <span class="tag plus"
+                                    >+{Math.log2(
                                         parseInt(phoneticNumberRange)
-                                    ).toFixed(1)}]</span
-                                >
-                            </span>
+                                    ).toFixed(1)}</span
+                                ></span
+                            >
                         </label>
                     </div>
                 </div>
 
                 {#if phoneticIncludeNumber}
-                    <div class="setting-group">
-                        <div class="select-row">
-                            <span class="select-label">ДИАПАЗОН ЧИСЛА</span>
-                            <select
-                                bind:value={phoneticNumberRange}
-                                on:change={generate}
-                                class="cyber-select"
-                            >
-                                <option value="10">0-9</option>
-                                <option value="100">00-99</option>
-                                <option value="1000">000-999</option>
-                            </select>
-                        </div>
+                    <div class="field">
+                        <span class="label">ДИАПАЗОН ЧИСЛА</span>
+                        <select
+                            bind:value={phoneticNumberRange}
+                            on:change={generate}
+                            class="sel"
+                        >
+                            <option value="10">0-9</option>
+                            <option value="100">00-99</option>
+                            <option value="1000">000-999</option>
+                        </select>
                     </div>
                 {/if}
 
-                <div class="dict-info phonetic-info">
-                    <span class="dict-label">ФОРМУЛА:</span>
-                    <span class="dict-value"
-                        >{phoneticWordCount} слов × {syllablesPerWord} слогов</span
+                <div class="data-row">
+                    <span>{phoneticWordCount} слов × {syllablesPerWord} слогов</span
                     >
-                    <span class="dict-separator">=</span>
-                    <span class="dict-value highlight"
+                    <span class="sep">=</span>
+                    <span class="hl"
                         >{phoneticWordCount * syllablesPerWord} слогов</span
                     >
                 </div>
@@ -1204,43 +1158,34 @@
         </div>
 
         {#if error}
-            <div class="error-msg">[!] {error}</div>
+            <div class="inline-error">[ОШИБКА] {error}</div>
         {/if}
 
-        <button class="big-gen-btn" on:click={generate}>
-            <span class="btn-icon">&gt;</span>
+        <button class="btn btn-generate" on:click={generate}>
             СГЕНЕРИРОВАТЬ
-            <span class="btn-icon">&lt;</span>
         </button>
-    </div>
+    </section>
 
-    <!-- История -->
-    <div class="panel history-panel">
-        <div class="panel-header">
-            <h3>// ЖУРНАЛ [{history.length}]</h3>
+    <!-- Журнал -->
+    <aside class="card history">
+        <div class="hist-head">
+            <h2 class="hist-title">ЖУРНАЛ [{history.length}]</h2>
             {#if history.length > 0}
-                <button class="clear-btn" on:click={clearHistory}
-                    >ОЧИСТИТЬ</button
-                >
+                <button class="clear" on:click={clearHistory}>ОЧИСТИТЬ</button>
             {/if}
         </div>
-        <div class="history-list">
+        <div class="hist-list">
             {#each history as item, i}
-                <button
-                    class="log-entry"
-                    on:click={() => restoreFromHistory(item)}
-                >
-                    <span class="log-index"
-                        >{String(i + 1).padStart(2, "0")}</span
-                    >
-                    <span class="log-data">{item}</span>
+                <button class="hist-item" on:click={() => restoreFromHistory(item)}>
+                    <span class="hist-i">{String(i + 1).padStart(2, "0")}</span>
+                    <span class="hist-pw">{item}</span>
                 </button>
             {/each}
             {#if history.length === 0}
-                <div class="empty-log">НЕТ ЗАПИСЕЙ</div>
+                <div class="hist-empty">НЕТ ЗАПИСЕЙ</div>
             {/if}
         </div>
-    </div>
+    </aside>
 </div>
 
 {#if showQR}
@@ -1252,1266 +1197,817 @@
         on:keydown={(e) => e.key === "Escape" && closeQR()}
     >
         <div class="modal">
-            <div class="modal-header">// QR-КОД ДОСТУПА</div>
-            <div class="qr-wrapper">
+            <div class="modal-head">
+                <span class="modal-title">// QR-КОД</span>
+                <button class="modal-close" on:click={closeQR}>[ X ]</button>
+            </div>
+            <div class="qr-box">
                 <canvas bind:this={qrCanvas}></canvas>
             </div>
-            <button class="close-btn" on:click={closeQR}>[ ЗАКРЫТЬ ]</button>
         </div>
     </div>
 {/if}
 
 <style>
-    /* === BASE === */
-    .cyber-container {
+    /* === СЕТКА === */
+    .app-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: var(--space-lg);
         width: 100%;
     }
 
-    @media (min-width: 900px) {
-        .cyber-container {
-            grid-template-columns: 2fr 1fr;
+    @media (min-width: 960px) {
+        .app-grid {
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
             align-items: start;
         }
-        .history-panel {
-            max-height: 700px;
+        .history {
             position: sticky;
-            top: 1rem;
+            top: var(--space-lg);
         }
     }
 
-    /* === PANELS === */
-    .panel {
-        background: rgba(10, 10, 10, 0.95);
-        border: 1px solid var(--toxic-green);
-        padding: 1.5rem;
-        position: relative;
-        box-shadow:
-            0 0 20px rgba(158, 245, 35, 0.1),
-            inset 0 0 60px rgba(0, 0, 0, 0.5);
+    /* === КАРТОЧКА === */
+    .card {
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        padding: var(--space-lg);
     }
 
-    .panel::before,
-    .panel::after {
-        content: "";
-        position: absolute;
-        width: 20px;
-        height: 20px;
+    @media (max-width: 600px) {
+        .card {
+            padding: var(--space-md);
+            border-radius: 10px;
+        }
     }
 
-    .panel::before {
-        top: -2px;
-        left: -2px;
-        border-left: 2px solid var(--toxic-green);
-        border-top: 2px solid var(--toxic-green);
+    /* === МЕТКИ === */
+    .label {
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+    }
+    .label.muted {
+        color: var(--text-disabled);
+    }
+    .section-label {
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: var(--space-md);
+    }
+    .count {
+        font-family: var(--font-mono);
+        font-size: var(--caption);
+        font-weight: 700;
+        color: var(--text-disabled);
     }
 
-    .panel::after {
-        bottom: -2px;
-        right: -2px;
-        border-right: 2px solid var(--toxic-green);
-        border-bottom: 2px solid var(--toxic-green);
-    }
-
-    .panel-header {
+    /* === СЕГМЕНТНЫЙ КОНТРОЛ === */
+    .seg-control {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(158, 245, 35, 0.2);
+        gap: 4px;
+        border: 2px solid var(--border-visible);
+        border-radius: 999px;
+        padding: 4px;
     }
-
-    .panel-header h3 {
-        margin: 0;
-        font-size: 1.1rem;
-        color: var(--toxic-green);
-        font-weight: 400;
+    .seg-control.block {
+        width: 100%;
     }
-
-    /* === TABS === */
-    .tabs {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .tabs button {
+    .seg-control button {
+        flex: 1;
         background: transparent;
         border: none;
-        color: #777;
-        font-family: var(--font-main);
-        font-size: 1rem;
         cursor: pointer;
-        transition: all 0.2s;
-        padding: 0;
-        font-weight: 600;
-        letter-spacing: 1px;
-    }
-
-    .tabs button:hover {
-        color: #999;
-    }
-
-    .tabs button.active {
-        color: var(--toxic-green);
-        text-shadow: 0 0 10px var(--toxic-green);
-    }
-
-    /* === PASSWORD DISPLAY === */
-    .display-section {
-        margin-bottom: 1.5rem;
-    }
-
-    .password-label {
-        font-size: 1.6rem;
-        color: #fff;
-        margin-bottom: 18px;
-        letter-spacing: 1px;
-        text-align: center;
-    }
-
-    .password-field {
-        background: #000;
-        border: 2px solid var(--toxic-green);
-        color: var(--toxic-green);
-        padding: 1rem 1.25rem;
-        font-size: clamp(1rem, 3vw, 1.5rem);
-        font-family: var(--font-main);
-        font-weight: 600;
-        word-break: break-all;
-        min-height: 3.5rem;
-        display: flex;
-        align-items: center;
-        margin-bottom: 0.75rem;
-        box-shadow:
-            inset 0 0 20px rgba(158, 245, 35, 0.1),
-            0 0 10px rgba(158, 245, 35, 0.1);
-        letter-spacing: 0.5px;
-        line-height: 1.4;
-    }
-
-    .password-field.pulse {
-        animation: fieldPulse 0.4s ease-out;
-    }
-
-    @keyframes fieldPulse {
-        0% {
-            background: var(--toxic-green);
-            color: #000;
-        }
-        100% {
-            background: #000;
-            color: var(--toxic-green);
-        }
-    }
-
-    .actions {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr;
-        gap: 8px;
-    }
-
-    .action-btn {
-        background: rgba(158, 245, 35, 0.1);
-        border: 1px solid var(--toxic-green);
-        color: var(--toxic-green);
-        font-family: var(--font-main);
-        font-size: 1rem;
-        padding: 0.7rem;
-        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        font-weight: 700;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        transition: all 0.15s;
-        font-weight: 600;
-        letter-spacing: 1px;
+        color: var(--text-secondary);
+        padding: 12px 12px;
+        border-radius: 999px;
+        white-space: nowrap;
+        transition:
+            color 0.2s var(--motion),
+            background 0.2s var(--motion);
+    }
+    .seg-control button:hover {
+        color: var(--text-primary);
+    }
+    .seg-control button.active {
+        background: var(--text-display);
+        color: var(--black);
+    }
+    .seg-control button.active .count {
+        color: var(--black);
+        opacity: 0.55;
     }
 
-    .action-btn:hover {
-        background: var(--toxic-green);
-        color: #000;
-        box-shadow: 0 0 15px rgba(158, 245, 35, 0.4);
+    /* Переключатель режимов — самый заметный контрол */
+    .modes {
+        margin-bottom: var(--space-xl);
+        border-color: var(--accent);
+        padding: 5px;
+        background: var(--surface-raised);
+    }
+    .modes button {
+        font-size: var(--body);
+        padding: 14px 12px;
+        letter-spacing: 0.1em;
+    }
+    .modes button:hover {
+        color: var(--accent-ink);
+    }
+    .modes button.active {
+        background: var(--accent);
+        color: var(--accent-contrast);
+    }
+    .modes button.active:hover {
+        color: var(--accent-contrast);
     }
 
-    .action-btn.success {
-        background: var(--toxic-green);
-        color: #000;
+    /* === ПАРОЛЬ === */
+    .pw-block {
+        margin-bottom: var(--space-xl);
     }
-
-    /* === ENTROPY SECTION === */
-    .entropy-section {
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid #333;
-        padding: 1.25rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .entropy-header {
+    .row-label {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
+        align-items: baseline;
+        margin-bottom: var(--space-sm);
     }
-
-    .entropy-status {
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: 1px;
-        transition: all 0.3s;
-        margin-bottom: 20px;
-    }
-
-    .entropy-value {
-        font-size: 1.4rem;
+    .pw-value {
+        font-family: var(--font-mono);
         font-weight: 700;
-        font-family: var(--font-main);
-        transition: all 0.3s;
-        margin-bottom: 20px;
+        font-size: clamp(1.05rem, 3.4vw, 1.6rem);
+        line-height: 1.4;
+        color: var(--text-display);
+        word-break: break-all;
+        background: var(--black);
+        border: 2px solid var(--border-visible);
+        border-radius: 8px;
+        padding: var(--space-md);
+        min-height: 3.75rem;
+        display: flex;
+        align-items: center;
+    }
+    .pw-value.flash {
+        animation: flash 0.4s var(--motion);
+    }
+    @keyframes flash {
+        0% {
+            background: var(--accent);
+            color: var(--accent-contrast);
+            border-color: var(--accent);
+        }
+        100% {
+            background: var(--black);
+            color: var(--text-display);
+        }
+    }
+    .pw-actions {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: var(--space-sm);
+        margin-top: var(--space-sm);
     }
 
-    .entropy-track {
-        height: 16px;
-        background: #0a0a0a;
-        border: 1px solid #444;
-        position: relative;
-        margin-bottom: 1rem;
-        overflow: visible;
-    }
-
-    .entropy-fill {
-        height: 100%;
+    /* === КНОПКИ === */
+    .btn {
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        min-height: 48px;
+        padding: 12px 20px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         transition:
-            width 0.4s ease,
-            background 0.4s;
-        position: relative;
+            opacity 0.15s var(--motion),
+            border-color 0.15s var(--motion),
+            background 0.15s var(--motion),
+            color 0.15s var(--motion);
+    }
+    .btn-primary {
+        background: var(--text-display);
+        color: var(--black);
+        border: 2px solid var(--text-display);
+    }
+    .btn-primary:hover {
+        opacity: 0.85;
+    }
+    .btn-primary.ok {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-contrast);
+    }
+    .btn-secondary {
+        background: var(--surface-raised);
+        border: 2px solid var(--border-visible);
+        color: var(--text-display);
+        font-size: var(--body);
+    }
+    .btn-secondary:hover {
+        border-color: var(--accent);
+        color: var(--accent-ink);
+    }
+    .btn-secondary.icon {
+        padding: 12px 18px;
+        font-size: 1.4rem;
+    }
+    .btn-generate {
+        width: 100%;
+        background: var(--accent);
+        border: 2px solid var(--accent);
+        color: var(--accent-contrast);
+        font-size: var(--subheading);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        padding: 18px;
+        margin-top: var(--space-lg);
+    }
+    .btn-generate:hover {
+        opacity: 0.9;
     }
 
-    .entropy-fill::after {
+    /* === ЭНТРОПИЯ === */
+    .entropy {
+        border-top: 2px solid var(--border-visible);
+        border-bottom: 2px solid var(--border-visible);
+        padding: var(--space-lg) 0;
+        margin-bottom: var(--space-xl);
+    }
+    .entropy-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: var(--space-md);
+        flex-wrap: wrap;
+        margin-bottom: var(--space-lg);
+    }
+    .entropy-hero {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+    .entropy-num {
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: var(--display-lg);
+        line-height: 1;
+        letter-spacing: -0.02em;
+        transition: color 0.3s var(--motion);
+    }
+    .entropy-unit {
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        letter-spacing: 0.1em;
+        color: var(--text-secondary);
+    }
+    .entropy-status {
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-align: right;
+        transition: color 0.3s var(--motion);
+    }
+
+    /* Сегментный бар */
+    .bar {
+        margin-bottom: var(--space-md);
+    }
+    .segments {
+        display: flex;
+        gap: 3px;
+        height: 24px;
+    }
+    .segments .seg {
+        flex: 1;
+        background: var(--segment-empty);
+        transition: background 0.3s var(--motion);
+    }
+    .segments .seg.filled {
+        background: var(--c, var(--accent));
+    }
+    .ticks {
+        position: relative;
+        height: 24px;
+        margin-top: 6px;
+    }
+    .tick {
+        position: absolute;
+        transform: translateX(-50%);
+        font-family: var(--font-mono);
+        font-size: var(--caption);
+        color: var(--text-disabled);
+        padding-top: 9px;
+    }
+    .tick::before {
         content: "";
         position: absolute;
         top: 0;
-        left: 0;
-        right: 0;
-        height: 50%;
-        background: linear-gradient(
-            to bottom,
-            rgba(255, 255, 255, 0.2),
-            transparent
-        );
-    }
-
-    .marker {
-        position: absolute;
-        top: -22px;
-        transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .marker::after {
-        content: "";
+        left: 50%;
         width: 1px;
-        height: 38px;
-        background: rgba(255, 255, 255, 0.2);
+        height: 6px;
+        background: var(--border-visible);
     }
 
-    .marker span {
-        font-size: 0.8rem;
-        color: #777;
-        margin-bottom: 2px;
-    }
-
-    .crack-info {
+    /* Стат-строка */
+    .stat-row {
         display: flex;
-        gap: 0.75rem;
+        justify-content: space-between;
         align-items: center;
-        padding: 0.75rem 0;
-        border-top: 1px dashed #333;
-        margin-bottom: 0.75rem;
+        gap: var(--space-md);
+        padding: var(--space-md) 0;
+        border-top: 1px solid var(--border);
+    }
+    .stat-val {
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        font-weight: 700;
+        transition: color 0.3s var(--motion);
     }
 
-    .crack-label {
-        font-size: 0.9rem;
-        color: #999;
-        letter-spacing: 0.5px;
-    }
-
-    .crack-value {
-        font-size: 1rem;
-        font-weight: 600;
-        font-family: var(--font-main);
-    }
-
-    /* === DETAILS === */
-    .details-section {
-        border-top: 1px dashed #333;
-        padding-top: 0.75rem;
-    }
-
+    /* Детализация */
     .details-toggle {
         background: none;
         border: none;
-        color: #999;
-        font-family: var(--font-main);
-        font-size: 0.95rem;
         cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.25rem 0;
-        transition: color 0.2s;
-        letter-spacing: 1px;
+        gap: 8px;
+        padding: var(--space-sm) 0 0;
     }
-
     .details-toggle:hover {
-        color: var(--toxic-green);
+        color: var(--text-primary);
     }
-
-    .toggle-icon {
-        color: var(--toxic-green);
+    .details-toggle .ic {
+        color: var(--accent-ink);
     }
-
-    .details-content {
-        margin-top: 0.75rem;
-        background: rgba(0, 0, 0, 0.3);
-        border-left: 2px solid #444;
-        padding: 0.5rem 0;
+    .breakdown {
+        margin-top: var(--space-sm);
     }
-
-    .detail-row {
+    .brk-row {
         display: flex;
         align-items: center;
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
+        gap: var(--space-sm);
+        padding: 6px 0;
+        font-family: var(--font-mono);
+        font-size: var(--caption);
     }
-
-    .detail-row.last {
-        border-bottom: 1px dashed #333;
-        margin-bottom: 0.5rem;
-        padding-bottom: 0.75rem;
-    }
-
-    .detail-row.total {
-        color: var(--toxic-green);
-        font-weight: 600;
-    }
-
-    .detail-label {
-        color: #aaa;
+    .brk-row .l {
+        color: var(--text-secondary);
         flex-shrink: 0;
     }
-
-    .detail-dots {
+    .brk-row .d {
         flex: 1;
-        border-bottom: 1px dotted #555;
-        margin: 0 0.75rem;
-        min-width: 20px;
+        border-bottom: 1px dotted var(--border-visible);
+        min-width: 16px;
     }
-
-    .detail-bits {
-        color: #bbb;
-        font-family: var(--font-main);
+    .brk-row .v {
+        color: var(--text-primary);
         flex-shrink: 0;
     }
-
-    .detail-row.total .detail-bits {
-        color: var(--toxic-green);
+    .brk-row.total {
+        border-top: 1px solid var(--border);
+        margin-top: 4px;
+        padding-top: 10px;
+    }
+    .brk-row.total .l,
+    .brk-row.total .v {
+        color: var(--accent-ink);
+        font-weight: 700;
     }
 
-    /* === SETTINGS === */
-    .settings-section {
-        margin-bottom: 1.5rem;
-    }
-
-    .section-header {
-        font-size: 0.9rem;
-        color: #888;
-        margin-bottom: 18px;
-        letter-spacing: 1px;
-    }
-
-    .setting-group {
-        margin-bottom: 1rem;
-    }
-
-    .setting-group:last-child {
-        margin-bottom: 0;
-    }
-
-    /* Cyrillic Switch */
-    .cyrillic-switch .switch-container {
-        cursor: pointer;
-        display: block;
-    }
-
-    .cyrillic-switch input {
-        display: none;
-    }
-
-    .switch-track {
-        display: flex;
-        height: 48px;
-        background: #0a0a0a;
-        border: 1px solid var(--toxic-green);
-        position: relative;
-        align-items: center;
-        justify-content: space-around;
-    }
-
-    .switch-thumb {
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        bottom: 2px;
-        width: calc(50% - 2px);
-        background: rgba(158, 245, 35, 0.15);
-        transition: 0.25s;
-        border: 1px solid rgba(158, 245, 35, 0.3);
-    }
-
-    .cyrillic-switch input:checked + .switch-track .switch-thumb {
-        left: 50%;
-    }
-
-    .label-off,
-    .label-on {
-        z-index: 2;
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #666;
-        transition: all 0.25s;
-        letter-spacing: 1px;
-    }
-
-    .cyrillic-switch input:not(:checked) + .switch-track .label-off {
-        color: var(--toxic-green);
-        text-shadow: 0 0 8px var(--toxic-green);
-    }
-
-    .cyrillic-switch input:checked + .switch-track .label-on {
-        color: var(--toxic-green);
-        text-shadow: 0 0 8px var(--toxic-green);
-    }
-
-    /* Slider */
-    .slider-row {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 1rem;
-        border: 1px solid #333;
-    }
-
-    .dual-sliders {
+    /* === ПАРАМЕТРЫ === */
+    .settings {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: var(--space-md);
     }
-
-    .dual-sliders .slider-row {
-        flex: 1;
+    .field > .label {
+        display: block;
+        margin-bottom: var(--space-sm);
     }
-
-    .slider-header {
+    .field-head {
         display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
+        align-items: baseline;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-sm);
+        flex-wrap: wrap;
     }
-
-    .slider-label {
-        font-size: 1rem;
-        color: #aaa;
-        letter-spacing: 1px;
-    }
-
-    .slider-value {
-        font-size: 1.3rem;
-        color: var(--toxic-green);
+    .field-val {
+        font-family: var(--font-mono);
         font-weight: 700;
-        font-family: var(--font-main);
+        font-size: var(--subheading);
+        color: var(--text-display);
     }
-
-    .slider-hint {
-        font-size: 0.9rem;
-        color: #888;
+    .field-hint {
+        font-family: var(--font-mono);
+        font-size: var(--caption);
+        color: var(--text-secondary);
         margin-left: auto;
     }
 
+    /* Ползунок */
     input[type="range"] {
         -webkit-appearance: none;
         appearance: none;
         width: 100%;
+        height: 24px;
         background: transparent;
-        margin: 0.5rem 0;
+        cursor: pointer;
+        margin: 0;
     }
-
+    input[type="range"]::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-visible);
+    }
     input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
-        height: 24px;
-        width: 12px;
-        background: var(--toxic-green);
-        cursor: pointer;
-        margin-top: -8px;
-        border: 1px solid #000;
-        box-shadow: 0 0 8px var(--toxic-green);
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 3px solid var(--surface);
+        box-shadow: 0 0 0 2px var(--accent);
+        margin-top: -9px;
     }
-
-    input[type="range"]::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 8px;
-        background: #111;
-        border: 1px solid #444;
+    input[type="range"]::-moz-range-track {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-visible);
     }
-
-    .slider-range {
+    input[type="range"]::-moz-range-progress {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--accent);
+    }
+    input[type="range"]::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 3px solid var(--surface);
+        box-shadow: 0 0 0 2px var(--accent);
+    }
+    .range-minmax {
         display: flex;
         justify-content: space-between;
-        font-size: 0.85rem;
-        color: #777;
+        font-family: var(--font-mono);
+        font-size: var(--caption);
+        color: var(--text-disabled);
+        margin-top: 2px;
     }
 
-    /* Checkbox Grid */
-    .checkbox-grid {
+    /* Чекбоксы */
+    .check-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: var(--space-sm);
     }
-
-    .checkbox-grid.xkcd-options,
-    .checkbox-grid.phonetic-options {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
     @media (min-width: 600px) {
-        .checkbox-grid.xkcd-options {
+        .check-grid.cols-3 {
             grid-template-columns: repeat(3, 1fr);
         }
     }
-
-    @media (max-width: 600px) {
-        .checkbox-grid {
+    @media (max-width: 480px) {
+        .check-grid {
             grid-template-columns: 1fr;
         }
     }
-
-    .cyber-check {
+    .check {
         display: flex;
         align-items: center;
         gap: 10px;
         cursor: pointer;
         user-select: none;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 10px 12px;
-        border: 1px solid #333;
-        transition: all 0.15s;
+        padding: 14px;
+        border: 2px solid var(--border-visible);
+        border-radius: 8px;
+        transition:
+            border-color 0.15s var(--motion),
+            background 0.15s var(--motion);
     }
-
-    .cyber-check:hover {
-        border-color: #555;
-        background: rgba(158, 245, 35, 0.03);
+    .check:hover {
+        border-color: var(--text-secondary);
+        background: var(--surface-raised);
     }
-
-    .cyber-check.highlight {
-        border-color: rgba(158, 245, 35, 0.4);
-        background: rgba(158, 245, 35, 0.05);
-    }
-
-    .cyber-check.disabled {
+    .check.disabled {
         opacity: 0.4;
         cursor: not-allowed;
     }
-
-    .cyber-check input {
-        display: none;
+    .check input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
     }
-
-    .check-box {
-        width: 16px;
-        height: 16px;
-        border: 2px solid var(--toxic-green);
-        display: inline-block;
-        position: relative;
+    .box {
+        width: 22px;
+        height: 22px;
+        border: 2px solid var(--border-visible);
+        border-radius: 5px;
         flex-shrink: 0;
+        position: relative;
+        transition:
+            background 0.15s var(--motion),
+            border-color 0.15s var(--motion);
     }
-
-    .cyber-check input:checked + .check-box::after {
+    .check input:checked + .box {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+    .check input:checked + .box::after {
         content: "";
         position: absolute;
+        left: 6px;
         top: 2px;
-        left: 2px;
-        right: 2px;
-        bottom: 2px;
-        background: var(--toxic-green);
-        box-shadow: 0 0 6px var(--toxic-green);
+        width: 6px;
+        height: 11px;
+        border: solid var(--accent-contrast);
+        border-width: 0 3px 3px 0;
+        transform: rotate(45deg);
     }
-
-    .check-label {
-        font-size: 1rem;
+    .check input:focus-visible + .box {
+        outline: 2px solid var(--accent-ink);
+        outline-offset: 2px;
+    }
+    .check-text {
+        font-family: var(--font-sans);
+        font-size: var(--body);
+        font-weight: 600;
+        color: var(--text-primary);
         display: flex;
         align-items: center;
         gap: 8px;
         flex-wrap: wrap;
-        color: #ccc;
     }
 
-    .char-count {
-        font-size: 0.9rem;
-        color: #888;
+    /* Теги энтропии */
+    .tag {
+        font-family: var(--font-mono);
+        font-size: var(--caption);
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border-visible);
+    }
+    .tag.zero {
+        color: var(--text-disabled);
+    }
+    .tag.plus {
+        color: var(--accent-ink);
+        border-color: var(--accent-ink);
     }
 
-    .entropy-tag {
-        font-size: 0.85rem;
-        padding: 2px 6px;
-        border-radius: 2px;
-    }
-
-    .entropy-tag.zero {
-        color: #888;
-        background: rgba(255, 255, 255, 0.05);
-    }
-
-    .entropy-tag.plus {
-        color: var(--toxic-green);
-        background: rgba(158, 245, 35, 0.1);
-    }
-
-    /* Select */
-    .select-row {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.75rem;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 1rem;
-        border: 1px solid #333;
-    }
-
-    .select-label {
-        font-size: 1rem;
-        color: #aaa;
-        letter-spacing: 1px;
-    }
-
-    .select-hint {
-        font-size: 0.9rem;
-        color: #888;
-    }
-
-    .cyber-select {
-        flex: 1;
-        min-width: 150px;
-        background: #000;
-        color: var(--toxic-green);
-        border: 1px solid var(--toxic-green);
-        font-family: var(--font-main);
-        font-size: 1rem;
-        padding: 0.6rem;
+    /* Селект */
+    .sel {
+        width: 100%;
+        background: var(--surface-raised);
+        color: var(--text-display);
+        border: 2px solid var(--border-visible);
+        border-radius: 8px;
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        font-weight: 700;
+        padding: 13px 12px;
+        min-height: 48px;
         cursor: pointer;
     }
-
-    .cyber-select:disabled {
+    .sel:hover {
+        border-color: var(--text-secondary);
+    }
+    .sel:disabled {
         opacity: 0.4;
         cursor: not-allowed;
     }
-
-    .cyber-select option {
-        background: #000;
-        color: var(--toxic-green);
+    .sel option {
+        background: var(--surface-raised);
+        color: var(--text-primary);
     }
 
-    /* Dict Info */
-    .dict-info {
+    /* Строка данных */
+    .data-row {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.75rem;
+        gap: var(--space-sm);
         flex-wrap: wrap;
-        padding: 1rem;
-        border: 1px dashed #444;
-        margin-top: 0.5rem;
-        background: rgba(0, 0, 0, 0.2);
-    }
-
-    .dict-info.phonetic-info {
-        border-color: rgba(158, 245, 35, 0.3);
-    }
-
-    .dict-label {
-        font-size: 0.9rem;
-        color: #999;
-        letter-spacing: 1px;
-    }
-
-    .dict-value {
-        font-size: 1rem;
-        color: var(--toxic-green);
-        font-weight: 600;
-    }
-
-    .dict-value.highlight {
-        background: rgba(158, 245, 35, 0.1);
-        padding: 2px 8px;
-    }
-
-    .dict-separator {
-        color: #555;
-    }
-
-    /* Error */
-    .error-msg {
-        color: #ff4444;
-        text-align: center;
-        padding: 1rem;
-        font-size: 1rem;
-        background: rgba(255, 0, 0, 0.05);
-        border: 1px solid rgba(255, 0, 0, 0.2);
-        margin-bottom: 1rem;
-    }
-
-    /* Generate Button */
-    .big-gen-btn {
-        width: 100%;
-        background: var(--toxic-green);
-        color: #000;
-        border: none;
-        padding: 1.1rem 1.5rem;
-        font-family: var(--font-main);
-        font-size: 1.3rem;
+        padding: var(--space-md);
+        border: 2px dashed var(--border-visible);
+        border-radius: 8px;
+        font-family: var(--font-mono);
+        font-size: var(--caption);
         font-weight: 700;
-        letter-spacing: 2px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        clip-path: polygon(
-            12px 0,
-            100% 0,
-            100% calc(100% - 12px),
-            calc(100% - 12px) 100%,
-            0 100%,
-            0 12px
-        );
-        transition: all 0.15s;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
+        color: var(--text-secondary);
+    }
+    .data-row .hl {
+        color: var(--accent-ink);
+    }
+    .data-row .sep {
+        color: var(--border-visible);
     }
 
-    .big-gen-btn:hover {
-        box-shadow:
-            0 0 20px var(--toxic-green),
-            inset 0 0 20px rgba(0, 0, 0, 0.2);
-        transform: translateY(-1px);
+    /* Ошибка */
+    .inline-error {
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        color: var(--st-weak);
+        border: 1px solid var(--st-weak);
+        border-radius: 8px;
+        padding: var(--space-md);
+        margin-top: var(--space-md);
     }
 
-    .big-gen-btn:active {
-        transform: translateY(1px);
-    }
-
-    .btn-icon {
-        opacity: 0.6;
-    }
-
-    /* === HISTORY === */
-    .history-panel {
+    /* === ЖУРНАЛ === */
+    .history {
         display: flex;
         flex-direction: column;
     }
-
-    .history-list {
-        flex: 1;
-        overflow-y: auto;
-        max-height: 500px;
+    .hist-head {
         display: flex;
-        flex-direction: column;
-        gap: 6px;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-md);
+        padding-bottom: var(--space-md);
+        border-bottom: 1px solid var(--border);
     }
-
-    .clear-btn {
-        background: transparent;
-        border: 1px solid #444;
-        color: #888;
-        font-family: var(--font-main);
-        cursor: pointer;
-        font-size: 0.9rem;
-        padding: 6px 10px;
-        letter-spacing: 1px;
-        transition: all 0.15s;
+    .hist-title {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        font-weight: 400;
     }
-
-    .clear-btn:hover {
-        border-color: #ff4444;
-        color: #ff4444;
-    }
-
-    .log-entry {
-        background: rgba(0, 0, 0, 0.3);
+    .clear {
+        background: none;
         border: none;
-        border-left: 2px solid #333;
-        color: #aaa;
-        text-align: left;
-        padding: 12px;
-        font-family: var(--font-main);
         cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-disabled);
+        transition: color 0.15s var(--motion);
+    }
+    .clear:hover {
+        color: var(--st-weak);
+    }
+    .hist-list {
         display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        transition: all 0.15s;
+        flex-direction: column;
+        max-height: 560px;
+        overflow-y: auto;
     }
-
-    .log-entry:hover {
-        background: rgba(158, 245, 35, 0.05);
-        border-left-color: var(--toxic-green);
-        color: var(--toxic-green);
+    .hist-item {
+        display: flex;
+        gap: var(--space-md);
+        align-items: baseline;
+        text-align: left;
+        background: none;
+        border: none;
+        border-bottom: 1px solid var(--border-visible);
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        padding: 14px 10px;
+        transition:
+            background 0.15s var(--motion),
+            border-left-color 0.15s var(--motion);
     }
-
-    .log-index {
-        font-size: 0.9rem;
-        color: #777;
+    .hist-item:hover {
+        background: var(--surface-raised);
+        border-left-color: var(--accent);
+    }
+    .hist-i {
+        font-family: var(--font-mono);
+        font-size: var(--caption);
+        font-weight: 700;
+        color: var(--text-disabled);
         flex-shrink: 0;
-        padding-top: 2px;
     }
-
-    .log-data {
+    .hist-pw {
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        font-weight: 700;
+        color: var(--text-primary);
         word-break: break-all;
-        line-height: 1.4;
-        font-size: 1rem;
+        line-height: 1.45;
     }
-
-    .empty-log {
+    .hist-empty {
+        padding: var(--space-2xl) var(--space-md);
         text-align: center;
-        color: #666;
-        padding: 2rem;
-        font-size: 1rem;
-        letter-spacing: 2px;
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        letter-spacing: 0.1em;
+        color: var(--text-disabled);
     }
 
-    /* === MODAL === */
+    /* === МОДАЛКА === */
     .modal-backdrop {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        backdrop-filter: blur(4px);
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 2000;
+        padding: var(--space-md);
     }
-
     .modal {
-        background: #000;
-        border: 2px solid var(--toxic-green);
-        padding: 1.5rem;
-        box-shadow:
-            0 0 40px rgba(158, 245, 35, 0.2),
-            inset 0 0 60px rgba(0, 0, 0, 0.5);
+        background: var(--surface);
+        border: 1px solid var(--border-visible);
+        border-radius: 16px;
+        padding: var(--space-lg);
+        width: 100%;
+        max-width: 380px;
         display: flex;
         flex-direction: column;
+        gap: var(--space-lg);
+    }
+    .modal-head {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 1.5rem;
-        max-width: 90%;
-        width: 380px;
-        position: relative;
     }
-
-    .modal::before,
-    .modal::after {
-        content: "";
-        position: absolute;
-        width: 25px;
-        height: 25px;
+    .modal-title {
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
     }
-
-    .modal::before {
-        top: -2px;
-        left: -2px;
-        border-left: 2px solid var(--toxic-green);
-        border-top: 2px solid var(--toxic-green);
+    .modal-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: var(--body-sm);
+        color: var(--text-secondary);
+        letter-spacing: 0.05em;
     }
-
-    .modal::after {
-        bottom: -2px;
-        right: -2px;
-        border-right: 2px solid var(--toxic-green);
-        border-bottom: 2px solid var(--toxic-green);
+    .modal-close:hover {
+        color: var(--text-primary);
     }
-
-    .modal-header {
-        font-size: 1.1rem;
-        color: var(--toxic-green);
-        width: 100%;
-        text-align: center;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px dashed #444;
-        letter-spacing: 2px;
+    .qr-box {
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        justify-content: center;
     }
-
-    .qr-wrapper {
-        border: 3px solid #222;
-        padding: 10px;
-        background: #000;
-    }
-
-    .qr-wrapper canvas {
+    .qr-box canvas {
         display: block;
         max-width: 100%;
         height: auto;
         image-rendering: pixelated;
     }
 
-    .close-btn {
-        background: transparent;
-        border: 1px solid var(--toxic-green);
-        color: var(--toxic-green);
-        padding: 0.9rem 1.5rem;
-        font-family: var(--font-main);
-        cursor: pointer;
-        font-size: 1rem;
-        letter-spacing: 2px;
-        transition: all 0.15s;
-        width: 100%;
-    }
-
-    .close-btn:hover {
-        background: var(--toxic-green);
-        color: #000;
-        box-shadow: 0 0 15px var(--toxic-green);
-    }
-
-    /* === АДАПТИВНАЯ ВЁРСТКА === */
-
-    /* Планшеты и ниже */
-    @media (max-width: 900px) {
-        .cyber-container {
-            gap: 1rem;
-        }
-        .panel {
-            padding: 1.25rem;
-        }
-        .password-label {
-            font-size: 1.3rem;
-        }
-    }
-
-    /* Мобильные телефоны */
+    /* === АДАПТИВ === */
     @media (max-width: 600px) {
-        .cyber-container {
-            gap: 0.75rem;
+        .modes {
+            margin-bottom: var(--space-lg);
         }
-
-        .panel {
-            padding: 0.75rem;
+        .pw-block {
+            margin-bottom: var(--space-lg);
         }
-
-        .panel-header {
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.5rem;
+        .entropy {
+            margin-bottom: var(--space-lg);
         }
-
-        .tabs {
-            gap: 0.5rem;
-        }
-
-        .tabs button {
-            font-size: 0.85rem;
-        }
-
-        /* Поле пароля */
-        .display-section {
-            margin-bottom: 0.75rem;
-        }
-
-        .password-label {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .password-field {
-            padding: 0.7rem 0.9rem;
-            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-            min-height: 2.5rem;
-        }
-
-        .actions {
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-        }
-
-        .action-btn {
-            font-size: 0.8rem;
-            padding: 0.5rem;
-        }
-
-        /* Энтропия */
-        .entropy-section {
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .entropy-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-            margin-bottom: 0.5rem;
-        }
-
         .entropy-status {
-            font-size: 0.8rem;
-            margin-bottom: 0;
+            text-align: left;
         }
-
-        .entropy-value {
-            font-size: 1.1rem;
-            margin-bottom: 0;
+        .pw-actions {
+            grid-template-columns: 1fr auto auto;
         }
-
-        .entropy-track {
-            height: 12px;
-        }
-
-        .marker {
-            top: -18px;
-        }
-
-        .marker::after {
-            height: 30px;
-        }
-
-        .marker span {
-            font-size: 0.65rem;
-        }
-
-        .crack-info {
-            padding: 0.5rem 0;
-            margin-bottom: 0.5rem;
-            flex-direction: column;
-            gap: 0.25rem;
-            align-items: flex-start;
-        }
-
-        .crack-label {
-            font-size: 0.75rem;
-        }
-
-        .crack-value {
-            font-size: 0.85rem;
-        }
-
-        /* Детали */
-        .details-toggle {
-            font-size: 0.8rem;
-        }
-
-        .detail-row {
-            padding: 0.3rem 0.75rem;
-            font-size: 0.75rem;
-        }
-
-        /* Настройки */
-        .settings-section {
-            margin-bottom: 0.75rem;
-        }
-
-        .section-header {
-            font-size: 0.8rem;
-            margin-bottom: 12px;
-        }
-
-        .setting-group {
-            margin-bottom: 0.5rem;
-        }
-
-        .slider-row {
-            padding: 0.6rem;
-        }
-
-        .slider-header {
-            flex-wrap: wrap;
-            gap: 0.4rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .slider-label {
-            font-size: 0.85rem;
-        }
-
-        .slider-value {
-            font-size: 1.1rem;
-        }
-
-        .slider-hint {
-            font-size: 0.8rem;
-            margin-left: unset;
-            width: 100%;
-        }
-
-        .select-row {
-            padding: 0.6rem;
-            gap: 0.4rem;
-        }
-
-        .select-label {
-            font-size: 0.85rem;
-            width: 100%;
-        }
-
-        .select-hint {
-            font-size: 0.8rem;
-        }
-
-        .cyber-select {
-            font-size: 0.85rem;
-            padding: 0.4rem;
-            min-width: auto;
-        }
-
-        .switch-track {
-            height: 40px;
-        }
-
-        .label-off,
-        .label-on {
-            font-size: 0.75rem;
-        }
-
-        .checkbox-grid {
-            gap: 6px;
-        }
-
-        .cyber-check {
-            padding: 8px 10px;
-            gap: 8px;
-        }
-
-        .check-label {
-            font-size: 0.85rem;
-        }
-
-        .check-box {
-            width: 14px;
-            height: 14px;
-        }
-
-        .entropy-tag {
-            font-size: 0.75rem;
-        }
-
-        .char-count {
-            font-size: 0.8rem;
-        }
-
-        /* Словарь */
-        .dict-info {
-            padding: 0.6rem;
-            gap: 0.4rem;
-        }
-
-        .dict-label {
-            font-size: 0.8rem;
-        }
-
-        .dict-value {
-            font-size: 0.85rem;
-        }
-
-        .dict-separator {
-            font-size: 0.8rem;
-        }
-
-        /* Кнопка генерации */
-        .big-gen-btn {
-            padding: 0.8rem 1rem;
-            font-size: 1.1rem;
-            gap: 0.5rem;
-        }
-
-        /* Ошибка */
-        .error-msg {
-            padding: 0.6rem;
-            font-size: 0.85rem;
-            margin-bottom: 0.75rem;
-        }
-
-        /* История */
-        .history-panel .panel-header h3 {
-            font-size: 0.9rem;
-        }
-
-        .clear-btn {
-            font-size: 0.8rem;
-            padding: 4px 8px;
-        }
-
-        .log-entry {
-            padding: 8px 10px;
-            gap: 8px;
-        }
-
-        .log-data {
-            font-size: 0.85rem;
-        }
-
-        .log-index {
-            font-size: 0.8rem;
-        }
-
-        .empty-log {
-            padding: 1.5rem;
-            font-size: 0.85rem;
-        }
-
-        /* Модалка QR */
-        .modal {
-            padding: 1rem;
-            gap: 1rem;
-            width: 300px;
-        }
-
-        .modal-header {
-            font-size: 0.95rem;
-        }
-
-        .close-btn {
-            font-size: 0.85rem;
-            padding: 0.7rem 1rem;
-        }
-    }
-
-    /* Очень маленькие экраны */
-    @media (max-width: 360px) {
-        .panel {
-            padding: 0.5rem;
-        }
-
-        .tabs button {
-            font-size: 0.75rem;
-        }
-
-        .password-label {
-            font-size: 0.95rem;
-        }
-
-        .password-field {
-            font-size: 0.85rem;
-            padding: 0.5rem 0.7rem;
-            min-height: 2rem;
-        }
-
-        .action-btn {
-            font-size: 0.7rem;
-            padding: 0.4rem;
-        }
-
-        .slider-value {
-            font-size: 1rem;
-        }
-
-        .big-gen-btn {
-            font-size: 0.95rem;
-            padding: 0.6rem 0.8rem;
+        .btn {
+            padding: 12px 14px;
+            font-size: var(--caption);
         }
     }
 </style>
