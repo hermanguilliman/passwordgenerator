@@ -656,11 +656,12 @@
         showQR = true;
         await tick();
         if (qrCanvas) {
-            // QR всегда чёрный на белом — максимальная сканируемость в любой теме
+            // Чёрные модули на токсично-зелёном фоне: тематично и сохраняет
+            // правильную полярность (тёмное на светлом) для надёжного сканирования
             QRCode.toCanvas(qrCanvas, password, {
-                width: 300,
+                width: 320,
                 margin: 2,
-                color: { dark: "#000000", light: "#ffffff" },
+                color: { dark: "#000000", light: "#9ef523" },
                 errorCorrectionLevel: "M",
             });
         }
@@ -715,7 +716,7 @@
         <div class="pw-block">
             <div class="row-label">
                 <span class="label">// ПАРОЛЬ</span>
-                <span class="label muted">{password.length} СИМВ.</span>
+                <span class="label muted">{password.length} СИМВОЛОВ</span>
             </div>
             <div class="pw-value" class:flash={copied}>
                 {password || "ИНИЦИАЛИЗАЦИЯ..."}
@@ -729,10 +730,26 @@
                     {copied ? "СКОПИРОВАНО" : "КОПИРОВАТЬ"}
                 </button>
                 <button
-                    class="btn btn-secondary"
+                    class="btn btn-secondary btn-qr"
                     on:click={generateQR}
-                    title="QR-код">QR</button
+                    title="QR-код"
+                    aria-label="Показать QR-код"
                 >
+                    <svg
+                        class="qr-ico"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        fill="currentColor"
+                    >
+                        <path
+                            d="M3 11h8V3H3v8zm2-6h4v4H5V5zm-2 16h8v-8H3v8zm2-6h4v4H5v-4zM13 3v8h8V3h-8zm6 6h-4V5h4v4z"
+                        />
+                        <path
+                            d="M13 13h2v2h-2zM17 13h2v2h-2zM13 15h2v2h-2zM17 15h2v2h-2zM19 13h2v2h-2zM15 17h2v2h-2zM13 17h2v2h-2zM19 17h2v2h-2zM13 19h2v2h-2zM15 19h2v2h-2zM17 19h2v2h-2zM19 19h2v2h-2z"
+                        />
+                    </svg>
+                    <span>QR</span>
+                </button>
                 <button
                     class="btn btn-secondary icon"
                     on:click={generate}
@@ -1463,6 +1480,21 @@
         padding: 12px 18px;
         font-size: 1.4rem;
     }
+    .btn-qr {
+        gap: 8px;
+        padding: 12px 18px;
+    }
+    .btn-qr .qr-ico {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+    .btn-qr:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-contrast);
+        box-shadow: 0 0 16px rgba(158, 245, 35, 0.35);
+    }
     .btn-generate {
         width: 100%;
         background: var(--accent);
@@ -2015,17 +2047,45 @@
         color: var(--text-primary);
     }
     .qr-box {
-        background: #ffffff;
-        border-radius: 8px;
-        padding: 16px;
+        position: relative;
+        background: var(--surface-raised);
+        border: 1px solid var(--border-visible);
+        border-radius: 10px;
+        padding: 18px;
         display: flex;
         justify-content: center;
+        box-shadow:
+            0 0 28px rgba(158, 245, 35, 0.22),
+            inset 0 0 0 1px rgba(158, 245, 35, 0.08);
+    }
+    /* Угловые скобки в стиле декоративных панелей */
+    .qr-box::before,
+    .qr-box::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--accent);
+        pointer-events: none;
+    }
+    .qr-box::before {
+        top: 7px;
+        left: 7px;
+        border-right: none;
+        border-bottom: none;
+    }
+    .qr-box::after {
+        bottom: 7px;
+        right: 7px;
+        border-left: none;
+        border-top: none;
     }
     .qr-box canvas {
         display: block;
         max-width: 100%;
         height: auto;
         image-rendering: pixelated;
+        border-radius: 4px;
     }
 
     /* === АДАПТИВ === */
