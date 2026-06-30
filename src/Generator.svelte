@@ -1246,9 +1246,9 @@
     /* === МЕТКИ === */
     .label {
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
         font-weight: 700;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
         color: var(--text-secondary);
     }
@@ -1257,16 +1257,16 @@
     }
     .section-label {
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
         font-weight: 700;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--text-secondary);
         margin-bottom: var(--space-md);
     }
     .count {
         font-family: var(--font-mono);
-        font-size: var(--caption);
+        font-size: var(--body-sm);
         font-weight: 700;
         color: var(--text-disabled);
     }
@@ -1474,7 +1474,8 @@
     }
     .entropy-unit {
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
+        font-weight: 700;
         letter-spacing: 0.1em;
         color: var(--text-secondary);
     }
@@ -1549,7 +1550,7 @@
         border: none;
         cursor: pointer;
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -1572,9 +1573,9 @@
         display: flex;
         align-items: center;
         gap: var(--space-sm);
-        padding: 6px 0;
+        padding: 7px 0;
         font-family: var(--font-mono);
-        font-size: var(--caption);
+        font-size: var(--body-sm);
     }
     .brk-row .l {
         color: var(--text-secondary);
@@ -1625,7 +1626,8 @@
     }
     .field-hint {
         font-family: var(--font-mono);
-        font-size: var(--caption);
+        font-size: var(--body-sm);
+        font-weight: 700;
         color: var(--text-secondary);
         margin-left: auto;
     }
@@ -1677,9 +1679,10 @@
         display: flex;
         justify-content: space-between;
         font-family: var(--font-mono);
-        font-size: var(--caption);
+        font-size: var(--body-sm);
+        font-weight: 700;
         color: var(--text-disabled);
-        margin-top: 2px;
+        margin-top: 4px;
     }
 
     /* Чекбоксы */
@@ -1769,8 +1772,9 @@
     /* Теги энтропии */
     .tag {
         font-family: var(--font-mono);
-        font-size: var(--caption);
-        padding: 2px 8px;
+        font-size: var(--body-sm);
+        font-weight: 700;
+        padding: 3px 10px;
         border-radius: 999px;
         border: 1px solid var(--border-visible);
     }
@@ -1819,7 +1823,7 @@
         border: 2px dashed var(--border-visible);
         border-radius: 8px;
         font-family: var(--font-mono);
-        font-size: var(--caption);
+        font-size: var(--body-sm);
         font-weight: 700;
         letter-spacing: 0.04em;
         text-transform: uppercase;
@@ -1859,18 +1863,19 @@
     .hist-title {
         margin: 0;
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--text-secondary);
-        font-weight: 400;
+        font-weight: 700;
     }
     .clear {
         background: none;
         border: none;
         cursor: pointer;
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
+        font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: var(--text-disabled);
@@ -1957,7 +1962,8 @@
     }
     .modal-title {
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
+        font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--text-secondary);

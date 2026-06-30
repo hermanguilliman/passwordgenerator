@@ -185,9 +185,9 @@
     .tagline {
         margin: 0;
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
         font-weight: 700;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         color: var(--text-secondary);
         white-space: nowrap;
@@ -209,12 +209,12 @@
         border: none;
         cursor: pointer;
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--text-secondary);
-        padding: 9px 18px;
+        padding: 10px 18px;
         border-radius: 999px;
         transition:
             color 0.2s var(--motion),

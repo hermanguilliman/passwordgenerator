@@ -21,7 +21,8 @@
         padding-top: var(--space-lg);
         border-top: 1px solid var(--border);
         font-family: var(--font-mono);
-        font-size: var(--label);
+        font-size: var(--caption);
+        font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--text-disabled);
