@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { lang, setLang, t } from "./i18n";
 
     // --- Тема ---
     type Theme = "dark" | "light";
@@ -96,32 +97,47 @@
                     >
                 {/each}
             </h1>
-            <p class="tagline">TERMINAL · ГЕНЕРАТОР ПАРОЛЕЙ</p>
+            <p class="tagline">{$t("tagline")}</p>
         </div>
     </div>
 
-    <button
-        class="skull-switch {theme}"
-        role="switch"
-        aria-checked={theme === "light"}
-        aria-label="Переключить тему оформления"
-        title={theme === "dark" ? "Тема: тёмная" : "Тема: светлая"}
-        on:click={() => applyTheme(theme === "dark" ? "light" : "dark")}
-    >
-        <span class="track">
-            <span class="lab lab-dark">DARK</span>
-            <span class="lab lab-light">LIGHT</span>
-            <span class="thumb">
-                <img
-                    class="skull"
-                    src="/skull_192.png"
-                    alt=""
-                    aria-hidden="true"
-                    draggable="false"
-                />
+    <div class="controls">
+        <div class="lang-switch" role="group" aria-label={$t("a11y.language")}>
+            <button
+                class:active={$lang === "ru"}
+                aria-pressed={$lang === "ru"}
+                on:click={() => setLang("ru")}>RU</button
+            >
+            <button
+                class:active={$lang === "en"}
+                aria-pressed={$lang === "en"}
+                on:click={() => setLang("en")}>EN</button
+            >
+        </div>
+
+        <button
+            class="skull-switch {theme}"
+            role="switch"
+            aria-checked={theme === "light"}
+            aria-label={$t("a11y.theme")}
+            title={theme === "dark" ? $t("theme.dark") : $t("theme.light")}
+            on:click={() => applyTheme(theme === "dark" ? "light" : "dark")}
+        >
+            <span class="track">
+                <span class="lab lab-dark">DARK</span>
+                <span class="lab lab-light">LIGHT</span>
+                <span class="thumb">
+                    <img
+                        class="skull"
+                        src="/skull_192.png"
+                        alt=""
+                        aria-hidden="true"
+                        draggable="false"
+                    />
+                </span>
             </span>
-        </span>
-    </button>
+        </button>
+    </div>
 </header>
 
 <style>
@@ -199,6 +215,48 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    /* Правый блок управления: язык + тема */
+    .controls {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        flex-shrink: 0;
+    }
+
+    /* Переключатель языка — сегментный тумблер RU/EN */
+    .lang-switch {
+        display: inline-flex;
+        height: 44px;
+        border: 2px solid var(--border-visible);
+        border-radius: 999px;
+        background: var(--surface-raised);
+        padding: 3px;
+        gap: 2px;
+    }
+    .lang-switch button {
+        min-width: 40px;
+        padding: 0 14px;
+        border: none;
+        border-radius: 999px;
+        background: transparent;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--text-disabled);
+        transition:
+            background 0.2s var(--motion),
+            color 0.2s var(--motion);
+    }
+    .lang-switch button:hover {
+        color: var(--text-primary);
+    }
+    .lang-switch button.active {
+        background: var(--accent);
+        color: var(--accent-contrast);
     }
 
     /* Переключатель темы — тумблер с черепом-бегунком */

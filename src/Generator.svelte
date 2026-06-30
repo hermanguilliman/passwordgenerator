@@ -1,12 +1,21 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
     import QRCode from "qrcode";
+    import { t } from "./i18n";
 
     // --- Типы ---
     interface CharCategory {
         name: string;
         chars: string;
         size: number;
+    }
+
+    // Структурная единица детализации энтропии (переводимая на лету)
+    interface EntropyDetail {
+        key?: string;
+        params?: Record<string, string | number>;
+        label?: string; // фолбэк для старых записей истории
+        bits: number;
     }
 
     // --- Состояние ---
@@ -40,16 +49,13 @@
 
     // Общие
     let password: string = "";
-    let error: string = "";
+    let errorKey: string = "";
+    let errorParams: Record<string, string | number> | undefined;
     let copied: boolean = false;
     interface HistoryEntry {
         password: string;
         bits: number;
-        color: string;
-        label: string;
-        percent: number;
-        details: { label: string; bits: number }[];
-        crackTime: string;
+        details: EntropyDetail[];
     }
     let history: HistoryEntry[] = [];
     let showQR: boolean = false;
@@ -57,12 +63,18 @@
 
     // Энтропия
     let entropyBits: number = 0;
-    let entropyColor: string = "var(--accent-ink)";
-    let entropyLabel: string = "БЕЗОПАСНОСТЬ: ВЫЧИСЛЕНИЕ...";
-    let entropyPercent: number = 0;
-    let entropyDetails: { label: string; bits: number }[] = [];
-    let crackTime: string = "";
+    let entropyDetails: EntropyDetail[] = [];
     let showDetails: boolean = false;
+
+    // Производные значения дисплея энтропии — реактивны к битам и языку,
+    // поэтому корректно обновляются при смене языка и восстановлении из истории
+    $: entropyColor = colorForBits(entropyBits);
+    $: entropyPercent = Math.min((entropyBits / ENTROPY_MAX) * 100, 100);
+    $: entropyLabel = password
+        ? $t(labelKeyForBits(entropyBits))
+        : $t("ent.calc");
+    $: crackTime = password ? formatTime(crackSeconds(entropyBits), $t) : "";
+    $: error = errorKey ? $t(errorKey, errorParams) : "";
 
     // Кол-во сегментов прогресс-бара энтропии
     const ENTROPY_SEGMENTS = 36;
@@ -171,7 +183,8 @@
 
     // --- Генерация ---
     const generate = (): void => {
-        error = "";
+        errorKey = "";
+        errorParams = undefined;
         if (mode === "standard") generateStandard();
         else if (mode === "xkcd") generateXKCD();
         else if (mode === "phonetic") generatePhonetic();
@@ -183,7 +196,7 @@
         const categories = getActiveCategories();
 
         if (categories.length === 0) {
-            error = "ВЫБЕРИТЕ ХОТЯ БЫ ОДНУ КАТЕГОРИЮ";
+            errorKey = "err.noCategory";
             password = "";
             return;
         }
@@ -192,7 +205,8 @@
         const minLength = categories.length;
 
         if (length < minLength) {
-            error = `МИНИМАЛЬНАЯ ДЛИНА: ${minLength}`;
+            errorKey = "err.minLength";
+            errorParams = { n: minLength };
             return;
         }
 
@@ -378,7 +392,6 @@
 
         if (!password) {
             entropyBits = 0;
-            updateEntropyDisplay();
             return;
         }
 
@@ -389,9 +402,6 @@
         } else if (mode === "phonetic") {
             calculatePhoneticEntropy();
         }
-
-        updateEntropyDisplay();
-        calculateCrackTime();
     };
 
     const calculateStandardEntropy = (): void => {
@@ -411,14 +421,19 @@
         for (const cat of categories) {
             const bits = Math.log2(cat.size);
             totalBits += bits;
-            entropyDetails.push({ label: `[${cat.name}] x1`, bits });
+            entropyDetails.push({
+                key: "det.category",
+                params: { name: cat.name },
+                bits,
+            });
         }
 
         if (L > k) {
             const remainingBits = (L - k) * Math.log2(N);
             totalBits += remainingBits;
             entropyDetails.push({
-                label: `[ПУЛ:${N}] x${L - k}`,
+                key: "det.pool",
+                params: { N, count: L - k },
                 bits: remainingBits,
             });
         }
@@ -427,14 +442,15 @@
             const permutationBits = logBinomial(L, k);
             totalBits += permutationBits;
             entropyDetails.push({
-                label: `ПЕРЕСТАНОВКА C(${L},${k})`,
+                key: "det.permutation",
+                params: { L, k },
                 bits: permutationBits,
             });
         }
 
         const upperBound = L * Math.log2(N);
         entropyBits = Math.min(totalBits, upperBound);
-        entropyDetails.push({ label: `ВЕРХНЯЯ ГРАНИЦА`, bits: upperBound });
+        entropyDetails.push({ key: "det.upperBound", bits: upperBound });
     };
 
     const calculateXKCDEntropy = (): void => {
@@ -442,13 +458,18 @@
 
         const wordBits = wordCount * BITS_PER_WORD;
         totalBits += wordBits;
-        entropyDetails.push({ label: `СЛОВА x${wordCount}`, bits: wordBits });
+        entropyDetails.push({
+            key: "det.words",
+            params: { count: wordCount },
+            bits: wordBits,
+        });
 
         if (randomCapitalization) {
             const capBits = wordCount * 1;
             totalBits += capBits;
             entropyDetails.push({
-                label: `СЛУЧ. РЕГИСТР x${wordCount}`,
+                key: "det.randomCase",
+                params: { count: wordCount },
                 bits: capBits,
             });
         }
@@ -458,7 +479,8 @@
             const numBits = Math.log2(range);
             totalBits += numBits;
             entropyDetails.push({
-                label: `ЧИСЛО [0-${range - 1}]`,
+                key: "det.number",
+                params: { max: range - 1 },
                 bits: numBits,
             });
         }
@@ -477,7 +499,8 @@
 
         const patternLabel = phoneticPattern.toUpperCase();
         entropyDetails.push({
-            label: `СЛОГИ [${patternLabel}] x${totalSyllables}`,
+            key: "det.syllables",
+            params: { pattern: patternLabel, count: totalSyllables },
             bits: syllableEntropy,
         });
 
@@ -486,7 +509,8 @@
             const numBits = Math.log2(range);
             totalBits += numBits;
             entropyDetails.push({
-                label: `ЧИСЛО [0-${range - 1}]`,
+                key: "det.number",
+                params: { max: range - 1 },
                 bits: numBits,
             });
         }
@@ -505,59 +529,41 @@
         return result;
     };
 
-    const updateEntropyDisplay = (): void => {
-        const bits = entropyBits;
-
-        if (bits < 28) {
-            entropyColor = "var(--st-weak)";
-            entropyLabel = "ВЗЛОМ: МГНОВЕННЫЙ";
-        } else if (bits < 40) {
-            entropyColor = "var(--st-weak)";
-            entropyLabel = "ВЗЛОМ: СЕКУНДЫ";
-        } else if (bits < 50) {
-            entropyColor = "var(--st-weak)";
-            entropyLabel = "ВЗЛОМ: МИНУТЫ";
-        } else if (bits < 60) {
-            entropyColor = "var(--st-fair)";
-            entropyLabel = "БЕЗОПАСНОСТЬ: СЛАБАЯ";
-        } else if (bits < 75) {
-            entropyColor = "var(--st-fair)";
-            entropyLabel = "БЕЗОПАСНОСТЬ: УМЕРЕННАЯ";
-        } else if (bits < 90) {
-            entropyColor = "var(--st-strong)";
-            entropyLabel = "БЕЗОПАСНОСТЬ: ХОРОШАЯ";
-        } else if (bits < 112) {
-            entropyColor = "var(--st-strong)";
-            entropyLabel = "БЕЗОПАСНОСТЬ: СИЛЬНАЯ";
-        } else if (bits < 128) {
-            entropyColor = "var(--st-strong)";
-            entropyLabel = "БЕЗОПАСНОСТЬ: ОЧЕНЬ СИЛЬНАЯ";
-        } else if (bits < 160) {
-            entropyColor = "var(--st-strong)";
-            entropyLabel = "КРИПТО: 2^80 ОПЕРАЦИЙ";
-        } else if (bits < 192) {
-            entropyColor = "var(--st-strong)";
-            entropyLabel = "КРИПТО: 2^96 ОПЕРАЦИЙ";
-        } else if (bits < 256) {
-            entropyColor = "var(--st-strong)";
-            entropyLabel = "КРИПТО: AES-192+";
-        } else {
-            entropyColor = "var(--text-display)";
-            entropyLabel = "КРИПТО: AES-256+";
-        }
-
-        entropyPercent = Math.min((bits / ENTROPY_MAX) * 100, 100);
+    // Цвет/метка/время — чистые функции от количества бит (+ переводчик).
+    // Используются в реактивных $:-выражениях, поэтому реагируют на язык.
+    const colorForBits = (bits: number): string => {
+        if (bits < 50) return "var(--st-weak)";
+        if (bits < 75) return "var(--st-fair)";
+        if (bits >= 256) return "var(--text-display)";
+        return "var(--st-strong)";
     };
 
-    const calculateCrackTime = (): void => {
-        const combinations = Math.pow(2, entropyBits);
+    const labelKeyForBits = (bits: number): string => {
+        if (bits < 28) return "ent.lvl.instant";
+        if (bits < 40) return "ent.lvl.seconds";
+        if (bits < 50) return "ent.lvl.minutes";
+        if (bits < 60) return "ent.lvl.weak";
+        if (bits < 75) return "ent.lvl.moderate";
+        if (bits < 90) return "ent.lvl.good";
+        if (bits < 112) return "ent.lvl.strong";
+        if (bits < 128) return "ent.lvl.veryStrong";
+        if (bits < 160) return "ent.lvl.crypto80";
+        if (bits < 192) return "ent.lvl.crypto96";
+        if (bits < 256) return "ent.lvl.aes192";
+        return "ent.lvl.aes256";
+    };
+
+    const crackSeconds = (bits: number): number => {
+        const combinations = Math.pow(2, bits);
         const speed = ATTACK_SPEEDS.offline_fast;
-        const seconds = combinations / speed / 2;
-        crackTime = formatTime(seconds);
+        return combinations / speed / 2;
     };
 
-    const formatTime = (seconds: number): string => {
-        if (!isFinite(seconds) || seconds > 1e30) return "БЕСКОНЕЧНОСТЬ";
+    const formatTime = (
+        seconds: number,
+        tr: (key: string, params?: Record<string, string | number>) => string,
+    ): string => {
+        if (!isFinite(seconds) || seconds > 1e30) return tr("time.infinite");
 
         const minute = 60;
         const hour = minute * 60;
@@ -567,18 +573,25 @@
         const millennium = year * 1000;
         const universe = year * 13.8e9;
 
-        if (seconds < 0.001) return "< 1 мс";
-        if (seconds < 1) return `${(seconds * 1000).toFixed(0)} мс`;
-        if (seconds < minute) return `${seconds.toFixed(1)} сек`;
-        if (seconds < hour) return `${(seconds / minute).toFixed(1)} мин`;
-        if (seconds < day) return `${(seconds / hour).toFixed(1)} часов`;
-        if (seconds < year) return `${(seconds / day).toFixed(1)} дней`;
-        if (seconds < century) return `${(seconds / year).toFixed(1)} лет`;
+        if (seconds < 0.001) return tr("time.lt1ms");
+        if (seconds < 1)
+            return tr("time.ms", { v: (seconds * 1000).toFixed(0) });
+        if (seconds < minute) return tr("time.sec", { v: seconds.toFixed(1) });
+        if (seconds < hour)
+            return tr("time.min", { v: (seconds / minute).toFixed(1) });
+        if (seconds < day)
+            return tr("time.hours", { v: (seconds / hour).toFixed(1) });
+        if (seconds < year)
+            return tr("time.days", { v: (seconds / day).toFixed(1) });
+        if (seconds < century)
+            return tr("time.years", { v: (seconds / year).toFixed(1) });
         if (seconds < millennium)
-            return `${(seconds / century).toFixed(1)} веков`;
+            return tr("time.centuries", { v: (seconds / century).toFixed(1) });
         if (seconds < universe)
-            return `${(seconds / millennium).toFixed(0)} тысячелетий`;
-        return `${(seconds / universe).toFixed(2)}x возраст Вселенной`;
+            return tr("time.millennia", {
+                v: (seconds / millennium).toFixed(0),
+            });
+        return tr("time.universe", { v: (seconds / universe).toFixed(2) });
     };
 
     // --- История ---
@@ -587,11 +600,7 @@
         const entry: HistoryEntry = {
             password: pwd,
             bits: entropyBits,
-            color: entropyColor,
-            label: entropyLabel,
-            percent: entropyPercent,
             details: [...entropyDetails],
-            crackTime,
         };
         history = [entry, ...history].slice(0, 20);
         localStorage.setItem("pwd_history", JSON.stringify(history));
@@ -603,22 +612,24 @@
             if (!stored) return;
             const parsed: unknown = JSON.parse(stored);
             if (!Array.isArray(parsed)) return;
-            // Миграция старого формата (массив строк) на объекты со снимком энтропии
-            history = parsed.map((item) =>
-                typeof item === "string"
-                    ? {
-                          password: item,
-                          bits: 0,
-                          color: "var(--text-secondary)",
-                          label: "ЭНТРОПИЯ: НЕИЗВЕСТНА",
-                          percent: 0,
-                          details: [
-                              { label: "ВОССТАНОВЛЕНО ИЗ ЖУРНАЛА", bits: 0 },
-                          ],
-                          crackTime: "Н/Д",
-                      }
-                    : (item as HistoryEntry),
-            );
+            // Совместимость со старыми форматами истории:
+            // - массив строк (очень старый формат)
+            // - объекты со снимком энтропии и details[].label (предыдущий формат)
+            history = parsed.map((item) => {
+                if (typeof item === "string") {
+                    return {
+                        password: item,
+                        bits: 0,
+                        details: [{ key: "hist.restored", bits: 0 }],
+                    };
+                }
+                const e = item as Partial<HistoryEntry>;
+                return {
+                    password: e.password ?? "",
+                    bits: typeof e.bits === "number" ? e.bits : 0,
+                    details: Array.isArray(e.details) ? e.details : [],
+                };
+            });
         } catch (e) {
             console.error("Failed to load history:", e);
         }
@@ -627,11 +638,7 @@
     const restoreFromHistory = (entry: HistoryEntry): void => {
         password = entry.password;
         entropyBits = entry.bits;
-        entropyDetails = entry.details;
-        entropyLabel = entry.label;
-        entropyColor = entry.color;
-        entropyPercent = entry.percent;
-        crackTime = entry.crackTime;
+        entropyDetails = entry.details ?? [];
         copyToClipboard();
     };
 
@@ -647,7 +654,7 @@
             copied = true;
             setTimeout(() => (copied = false), 2000);
         } catch {
-            error = "ОШИБКА БУФЕРА ОБМЕНА";
+            errorKey = "err.clipboard";
         }
     };
 
@@ -682,7 +689,7 @@
 <div class="app-grid">
     <section class="card generator">
         <!-- Режимы -->
-        <div class="seg-control modes" role="tablist" aria-label="Режим генерации">
+        <div class="seg-control modes" role="tablist" aria-label={$t("a11y.mode")}>
             <button
                 role="tab"
                 aria-selected={mode === "standard"}
@@ -690,7 +697,7 @@
                 on:click={() => {
                     mode = "standard";
                     generate();
-                }}>СТАНДАРТ</button
+                }}>{$t("mode.standard")}</button
             >
             <button
                 role="tab"
@@ -699,7 +706,7 @@
                 on:click={() => {
                     mode = "xkcd";
                     generate();
-                }}>XKCD</button
+                }}>{$t("mode.xkcd")}</button
             >
             <button
                 role="tab"
@@ -708,18 +715,18 @@
                 on:click={() => {
                     mode = "phonetic";
                     generate();
-                }}>ФОНЕТИК</button
+                }}>{$t("mode.phonetic")}</button
             >
         </div>
 
         <!-- Дисплей пароля -->
         <div class="pw-block">
             <div class="row-label">
-                <span class="label">// ПАРОЛЬ</span>
-                <span class="label muted">{password.length} СИМВОЛОВ</span>
+                <span class="label">{$t("pw.label")}</span>
+                <span class="label muted">{$t("pw.chars", { n: password.length })}</span>
             </div>
             <div class="pw-value" class:flash={copied}>
-                {password || "ИНИЦИАЛИЗАЦИЯ..."}
+                {password || $t("pw.init")}
             </div>
             <div class="pw-actions">
                 <button
@@ -727,13 +734,13 @@
                     class:ok={copied}
                     on:click={copyToClipboard}
                 >
-                    {copied ? "СКОПИРОВАНО" : "КОПИРОВАТЬ"}
+                    {copied ? $t("pw.copied") : $t("pw.copy")}
                 </button>
                 <button
                     class="btn btn-secondary btn-qr"
                     on:click={generateQR}
-                    title="QR-код"
-                    aria-label="Показать QR-код"
+                    title={$t("qr.title")}
+                    aria-label={$t("a11y.qr")}
                 >
                     <svg
                         class="qr-ico"
@@ -753,8 +760,8 @@
                 <button
                     class="btn btn-secondary icon"
                     on:click={generate}
-                    title="Обновить"
-                    aria-label="Сгенерировать заново">↻</button
+                    title={$t("refresh.title")}
+                    aria-label={$t("a11y.refresh")}>↻</button
                 >
             </div>
         </div>
@@ -766,7 +773,7 @@
                     <span class="entropy-num" style="color: {entropyColor}"
                         >{entropyBits.toFixed(1)}</span
                     >
-                    <span class="entropy-unit">БИТ</span>
+                    <span class="entropy-unit">{$t("ent.bit")}</span>
                 </div>
                 <span class="entropy-status" style="color: {entropyColor}"
                     >{entropyLabel}</span
@@ -787,10 +794,11 @@
                     {/each}
                 </div>
                 <div class="ticks">
-                    {#each THRESHOLDS as t}
+                    {#each THRESHOLDS as threshold}
                         <span
                             class="tick"
-                            style="left: {(t / ENTROPY_MAX) * 100}%">{t}</span
+                            style="left: {(threshold / ENTROPY_MAX) * 100}%"
+                            >{threshold}</span
                         >
                     {/each}
                 </div>
@@ -798,7 +806,7 @@
 
             <!-- Время подбора -->
             <div class="stat-row">
-                <span class="label">ВРЕМЯ ПОДБОРА · 10¹⁰/С</span>
+                <span class="label">{$t("ent.crackTitle")}</span>
                 <span class="stat-val" style="color: {entropyColor}"
                     >{crackTime}</span
                 >
@@ -807,22 +815,28 @@
             <!-- Детализация -->
             <button class="details-toggle" on:click={toggleDetails}>
                 <span class="ic">{showDetails ? "[−]" : "[+]"}</span>
-                РАСЧЁТ ЭНТРОПИИ
+                {$t("ent.breakdown")}
             </button>
 
             {#if showDetails && entropyDetails.length > 0}
                 <div class="breakdown">
                     {#each entropyDetails as detail}
                         <div class="brk-row">
-                            <span class="l">{detail.label}</span>
+                            <span class="l"
+                                >{detail.key
+                                    ? $t(detail.key, detail.params)
+                                    : detail.label}</span
+                            >
                             <span class="d"></span>
                             <span class="v">{detail.bits.toFixed(2)}</span>
                         </div>
                     {/each}
                     <div class="brk-row total">
-                        <span class="l">ИТОГО</span>
+                        <span class="l">{$t("ent.total")}</span>
                         <span class="d"></span>
-                        <span class="v">{entropyBits.toFixed(2)} БИТ</span>
+                        <span class="v"
+                            >{entropyBits.toFixed(2)} {$t("ent.bit")}</span
+                        >
                     </div>
                 </div>
             {/if}
@@ -830,11 +844,11 @@
 
         <!-- Параметры -->
         <div class="settings">
-            <div class="section-label">// ПАРАМЕТРЫ</div>
+            <div class="section-label">{$t("set.label")}</div>
 
             {#if mode === "standard"}
                 <div class="field">
-                    <span class="label">АЛФАВИТ</span>
+                    <span class="label">{$t("set.alphabet")}</span>
                     <div class="seg-control block">
                         <button
                             class:active={!useCyrillic}
@@ -842,7 +856,7 @@
                                 useCyrillic = false;
                                 generate();
                             }}
-                            >LAT <span class="count"
+                            >{$t("set.lat")} <span class="count"
                                 >{LATIN_LOWER.length * 2}</span
                             ></button
                         >
@@ -852,7 +866,7 @@
                                 useCyrillic = true;
                                 generate();
                             }}
-                            >КИР <span class="count"
+                            >{$t("set.cyr")} <span class="count"
                                 >{CYRILLIC_LOWER.length * 2}</span
                             ></button
                         >
@@ -861,7 +875,7 @@
 
                 <div class="field">
                     <div class="field-head">
-                        <span class="label">ДЛИНА</span>
+                        <span class="label">{$t("set.length")}</span>
                         <span class="field-val">{length}</span>
                     </div>
                     <input
@@ -870,7 +884,7 @@
                         min="4"
                         max="64"
                         on:input={generate}
-                        aria-label="Длина пароля"
+                        aria-label={$t("a11y.length")}
                     />
                     <div class="range-minmax"><span>4</span><span>64</span></div>
                 </div>
@@ -938,10 +952,12 @@
             {:else if mode === "xkcd"}
                 <div class="field">
                     <div class="field-head">
-                        <span class="label">КОЛИЧЕСТВО СЛОВ</span>
+                        <span class="label">{$t("set.wordCount")}</span>
                         <span class="field-val">{wordCount}</span>
                         <span class="field-hint"
-                            >~{(wordCount * BITS_PER_WORD).toFixed(1)} бит</span
+                            >{$t("set.bitsHint", {
+                                v: (wordCount * BITS_PER_WORD).toFixed(1),
+                            })}</span
                         >
                     </div>
                     <input
@@ -950,32 +966,34 @@
                         min="3"
                         max="12"
                         on:input={generate}
-                        aria-label="Количество слов"
+                        aria-label={$t("a11y.wordCount")}
                     />
                     <div class="range-minmax"><span>3</span><span>12</span></div>
                 </div>
 
                 <div class="field">
-                    <span class="label">РАЗДЕЛИТЕЛЬ</span>
+                    <span class="label">{$t("set.separator")}</span>
                     <select
                         bind:value={separator}
                         on:change={generate}
                         class="sel"
                     >
-                        <option value="-">ТИРЕ [-]</option>
-                        <option value="_">НИЖНЕЕ [_]</option>
-                        <option value=".">ТОЧКА [.]</option>
-                        <option value=" ">ПРОБЕЛ [ ]</option>
-                        <option value="+">ПЛЮС [+]</option>
-                        <option value="">БЕЗ РАЗДЕЛИТЕЛЯ</option>
+                        <option value="-">{$t("sep.dash")}</option>
+                        <option value="_">{$t("sep.underscore")}</option>
+                        <option value=".">{$t("sep.dot")}</option>
+                        <option value=" ">{$t("sep.space")}</option>
+                        <option value="+">{$t("sep.plus")}</option>
+                        <option value="">{$t("sep.none")}</option>
                     </select>
                 </div>
 
                 <div class="field">
                     <div class="field-head">
-                        <span class="label">ДИАПАЗОН ЧИСЛА</span>
+                        <span class="label">{$t("set.numberRange")}</span>
                         <span class="field-hint"
-                            >+{Math.log2(parseInt(numberRange)).toFixed(1)} бит</span
+                            >{$t("set.bitsHintPlus", {
+                                v: Math.log2(parseInt(numberRange)).toFixed(1),
+                            })}</span
                         >
                     </div>
                     <select
@@ -1005,7 +1023,7 @@
                             />
                             <span class="box"></span>
                             <span class="check-text"
-                                >Заглавные
+                                >{$t("chk.capitalize")}
                                 <span class="tag zero">+0</span></span
                             >
                         </label>
@@ -1021,7 +1039,7 @@
                             />
                             <span class="box"></span>
                             <span class="check-text"
-                                >Случ. регистр
+                                >{$t("chk.randomCase")}
                                 <span class="tag plus">+{wordCount}</span></span
                             >
                         </label>
@@ -1033,7 +1051,7 @@
                             />
                             <span class="box"></span>
                             <span class="check-text"
-                                >Число
+                                >{$t("chk.number")}
                                 <span class="tag plus"
                                     >+{Math.log2(parseInt(numberRange)).toFixed(
                                         1
@@ -1045,14 +1063,18 @@
                 </div>
 
                 <div class="data-row">
-                    <span>СЛОВАРЬ</span>
-                    <span class="hl">{DICT_SIZE} СЛОВ</span>
+                    <span>{$t("set.dictionary")}</span>
+                    <span class="hl">{$t("set.wordsCount", { n: DICT_SIZE })}</span>
                     <span class="sep">/</span>
-                    <span class="hl">{BITS_PER_WORD.toFixed(4)} БИТ/СЛОВО</span>
+                    <span class="hl"
+                        >{$t("set.bitsPerWord", {
+                            v: BITS_PER_WORD.toFixed(4),
+                        })}</span
+                    >
                 </div>
             {:else if mode === "phonetic"}
                 <div class="field">
-                    <span class="label">АЛФАВИТ</span>
+                    <span class="label">{$t("set.alphabet")}</span>
                     <div class="seg-control block">
                         <button
                             class:active={!useCyrillicPhonetic}
@@ -1060,7 +1082,7 @@
                                 useCyrillicPhonetic = false;
                                 generate();
                             }}
-                            >LAT <span class="count"
+                            >{$t("set.lat")} <span class="count"
                                 >{LATIN_CONSONANTS.length}C·{LATIN_VOWELS.length}V</span
                             ></button
                         >
@@ -1070,7 +1092,7 @@
                                 useCyrillicPhonetic = true;
                                 generate();
                             }}
-                            >КИР <span class="count"
+                            >{$t("set.cyr")} <span class="count"
                                 >{CYRILLIC_CONSONANTS.length}C·{CYRILLIC_VOWELS.length}V</span
                             ></button
                         >
@@ -1079,9 +1101,11 @@
 
                 <div class="field">
                     <div class="field-head">
-                        <span class="label">ПАТТЕРН СЛОГА</span>
+                        <span class="label">{$t("set.syllPattern")}</span>
                         <span class="field-hint"
-                            >{getPhoneticSyllableBits().toFixed(2)} бит/слог</span
+                            >{$t("set.bitsPerSyll", {
+                                v: getPhoneticSyllableBits().toFixed(2),
+                            })}</span
                         >
                     </div>
                     <select
@@ -1089,16 +1113,16 @@
                         on:change={generate}
                         class="sel"
                     >
-                        <option value="cv">CV (ба, ке, ми)</option>
-                        <option value="cvc">CVC (бак, кем, мир)</option>
-                        <option value="cvcc">CVCC (банк, керн)</option>
-                        <option value="ccvc">CCVC (стар, крик)</option>
+                        <option value="cv">{$t("pat.cv")}</option>
+                        <option value="cvc">{$t("pat.cvc")}</option>
+                        <option value="cvcc">{$t("pat.cvcc")}</option>
+                        <option value="ccvc">{$t("pat.ccvc")}</option>
                     </select>
                 </div>
 
                 <div class="field">
                     <div class="field-head">
-                        <span class="label">СЛОГОВ В СЛОВЕ</span>
+                        <span class="label">{$t("set.syllPerWord")}</span>
                         <span class="field-val">{syllablesPerWord}</span>
                     </div>
                     <input
@@ -1107,21 +1131,23 @@
                         min="2"
                         max="6"
                         on:input={generate}
-                        aria-label="Слогов в слове"
+                        aria-label={$t("a11y.syllPerWord")}
                     />
                     <div class="range-minmax"><span>2</span><span>6</span></div>
                 </div>
 
                 <div class="field">
                     <div class="field-head">
-                        <span class="label">КОЛИЧЕСТВО СЛОВ</span>
+                        <span class="label">{$t("set.wordCount")}</span>
                         <span class="field-val">{phoneticWordCount}</span>
                         <span class="field-hint"
-                            >~{(
-                                phoneticWordCount *
-                                syllablesPerWord *
-                                getPhoneticSyllableBits()
-                            ).toFixed(1)} бит</span
+                            >{$t("set.bitsHint", {
+                                v: (
+                                    phoneticWordCount *
+                                    syllablesPerWord *
+                                    getPhoneticSyllableBits()
+                                ).toFixed(1),
+                            })}</span
                         >
                     </div>
                     <input
@@ -1130,22 +1156,22 @@
                         min="2"
                         max="6"
                         on:input={generate}
-                        aria-label="Количество слов"
+                        aria-label={$t("a11y.wordCount")}
                     />
                     <div class="range-minmax"><span>2</span><span>6</span></div>
                 </div>
 
                 <div class="field">
-                    <span class="label">РАЗДЕЛИТЕЛЬ</span>
+                    <span class="label">{$t("set.separator")}</span>
                     <select
                         bind:value={phoneticSeparator}
                         on:change={generate}
                         class="sel"
                     >
-                        <option value="-">ТИРЕ [-]</option>
-                        <option value="_">НИЖНЕЕ [_]</option>
-                        <option value=".">ТОЧКА [.]</option>
-                        <option value="">БЕЗ РАЗДЕЛИТЕЛЯ</option>
+                        <option value="-">{$t("sep.dash")}</option>
+                        <option value="_">{$t("sep.underscore")}</option>
+                        <option value=".">{$t("sep.dot")}</option>
+                        <option value="">{$t("sep.none")}</option>
                     </select>
                 </div>
 
@@ -1159,7 +1185,7 @@
                             />
                             <span class="box"></span>
                             <span class="check-text"
-                                >Заглавные
+                                >{$t("chk.capitalize")}
                                 <span class="tag zero">+0</span></span
                             >
                         </label>
@@ -1171,7 +1197,7 @@
                             />
                             <span class="box"></span>
                             <span class="check-text"
-                                >Число
+                                >{$t("chk.number")}
                                 <span class="tag plus"
                                     >+{Math.log2(
                                         parseInt(phoneticNumberRange)
@@ -1184,7 +1210,7 @@
 
                 {#if phoneticIncludeNumber}
                     <div class="field">
-                        <span class="label">ДИАПАЗОН ЧИСЛА</span>
+                        <span class="label">{$t("set.numberRange")}</span>
                         <select
                             bind:value={phoneticNumberRange}
                             on:change={generate}
@@ -1198,31 +1224,39 @@
                 {/if}
 
                 <div class="data-row">
-                    <span>{phoneticWordCount} слов × {syllablesPerWord} слогов</span
+                    <span
+                        >{$t("phon.dataRow", {
+                            words: phoneticWordCount,
+                            syll: syllablesPerWord,
+                        })}</span
                     >
                     <span class="sep">=</span>
                     <span class="hl"
-                        >{phoneticWordCount * syllablesPerWord} слогов</span
+                        >{$t("phon.syllables", {
+                            n: phoneticWordCount * syllablesPerWord,
+                        })}</span
                     >
                 </div>
             {/if}
         </div>
 
         {#if error}
-            <div class="inline-error">[ОШИБКА] {error}</div>
+            <div class="inline-error">{$t("err.prefix")} {error}</div>
         {/if}
 
         <button class="btn btn-generate" on:click={generate}>
-            СГЕНЕРИРОВАТЬ
+            {$t("btn.generate")}
         </button>
     </section>
 
     <!-- Журнал -->
     <aside class="card history">
         <div class="hist-head">
-            <h2 class="hist-title">ЖУРНАЛ [{history.length}]</h2>
+            <h2 class="hist-title">{$t("hist.title", { n: history.length })}</h2>
             {#if history.length > 0}
-                <button class="clear" on:click={clearHistory}>ОЧИСТИТЬ</button>
+                <button class="clear" on:click={clearHistory}
+                    >{$t("hist.clear")}</button
+                >
             {/if}
         </div>
         <div class="hist-list">
@@ -1233,7 +1267,7 @@
                 </button>
             {/each}
             {#if history.length === 0}
-                <div class="hist-empty">НЕТ ЗАПИСЕЙ</div>
+                <div class="hist-empty">{$t("hist.empty")}</div>
             {/if}
         </div>
     </aside>
@@ -1249,7 +1283,7 @@
     >
         <div class="modal">
             <div class="modal-head">
-                <span class="modal-title">// QR-КОД</span>
+                <span class="modal-title">{$t("qr.modalTitle")}</span>
                 <button class="modal-close" on:click={closeQR}>[ X ]</button>
             </div>
             <div class="qr-box">
