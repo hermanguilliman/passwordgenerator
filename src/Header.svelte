@@ -100,22 +100,35 @@
         </div>
     </div>
 
-    <div
-        class="theme-toggle"
-        role="group"
-        aria-label="Переключатель темы оформления"
+    <button
+        class="skull-switch {theme}"
+        role="switch"
+        aria-checked={theme === "light"}
+        aria-label="Переключить тему оформления"
+        title={theme === "dark" ? "Тема: тёмная" : "Тема: светлая"}
+        on:click={() => applyTheme(theme === "dark" ? "light" : "dark")}
     >
-        <button
-            class:active={theme === "dark"}
-            aria-pressed={theme === "dark"}
-            on:click={() => applyTheme("dark")}>DARK</button
-        >
-        <button
-            class:active={theme === "light"}
-            aria-pressed={theme === "light"}
-            on:click={() => applyTheme("light")}>LIGHT</button
-        >
-    </div>
+        <span class="track">
+            <span class="lab lab-dark">DARK</span>
+            <span class="lab lab-light">LIGHT</span>
+            <span class="thumb">
+                <svg
+                    class="skull"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                >
+                    <path
+                        fill="currentColor"
+                        d="M12 2.5c-4.7 0-8 3.2-8 7.7 0 2.3 1 4 2.2 5.1.5.5.8.8.8 1.5v1.4c0 .9.7 1.6 1.6 1.6h.4v-1.6c0-.4.3-.7.7-.7s.7.3.7.7V19h1.8v-1.6c0-.4.3-.7.7-.7s.7.3.7.7V19h.4c.9 0 1.6-.7 1.6-1.6v-1.4c0-.7.3-1 .8-1.5C19 14 20 12.3 20 10c0-4.5-3.3-7.7-8-7.7Z"
+                    />
+                    <circle class="hole" cx="8.7" cy="10.2" r="1.9" />
+                    <circle class="hole" cx="15.3" cy="10.2" r="1.9" />
+                    <path class="hole" d="M12 11.6l-1.1 2.2h2.2z" />
+                </svg>
+            </span>
+        </span>
+    </button>
 </header>
 
 <style>
@@ -195,39 +208,88 @@
         text-overflow: ellipsis;
     }
 
-    /* Сегментный переключатель темы */
-    .theme-toggle {
-        display: inline-flex;
-        border: 2px solid var(--border-visible);
-        border-radius: 999px;
-        padding: 3px;
+    /* Переключатель темы — тумблер с черепом-бегунком */
+    .skull-switch {
+        background: transparent;
+        border: none;
+        padding: 0;
+        cursor: pointer;
         flex-shrink: 0;
     }
 
-    .theme-toggle button {
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        font-family: var(--font-mono);
-        font-size: var(--caption);
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--text-secondary);
-        padding: 10px 18px;
+    .track {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 104px;
+        height: 44px;
+        border: 2px solid var(--border-visible);
         border-radius: 999px;
-        transition:
-            color 0.2s var(--motion),
-            background 0.2s var(--motion);
+        background: var(--surface-raised);
+        transition: border-color 0.2s var(--motion);
     }
 
-    .theme-toggle button:hover {
+    .skull-switch:hover .track {
+        border-color: var(--accent);
+    }
+
+    .lab {
+        position: absolute;
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--text-disabled);
+        transition:
+            opacity 0.2s var(--motion),
+            color 0.2s var(--motion);
+    }
+    .lab-dark {
+        left: 14px;
+    }
+    .lab-light {
+        right: 12px;
+    }
+    /* Подпись под бегунком прячется, противоположная — подсвечивается */
+    .skull-switch.dark .lab-dark,
+    .skull-switch.light .lab-light {
+        opacity: 0;
+    }
+    .skull-switch.dark .lab-light,
+    .skull-switch.light .lab-dark {
         color: var(--text-primary);
     }
 
-    .theme-toggle button.active {
-        background: var(--text-display);
-        color: var(--black);
+    .thumb {
+        position: absolute;
+        top: 50%;
+        left: 4px;
+        transform: translateY(-50%);
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+            left 0.3s var(--motion),
+            transform 0.15s var(--motion);
+    }
+    .skull-switch.light .thumb {
+        left: calc(100% - 38px);
+    }
+    .skull-switch:active .thumb {
+        transform: translateY(-50%) scale(0.9);
+    }
+
+    .skull {
+        width: 24px;
+        height: 24px;
+        color: var(--accent-contrast);
+    }
+    .skull .hole {
+        fill: var(--accent);
     }
 
     @media (max-width: 480px) {
