@@ -2180,4 +2180,338 @@
         color: #000;
         box-shadow: 0 0 15px var(--toxic-green);
     }
+
+    /* === АДАПТИВНАЯ ВЁРСТКА === */
+
+    /* Планшеты и ниже */
+    @media (max-width: 900px) {
+        .cyber-container {
+            gap: 1rem;
+        }
+        .panel {
+            padding: 1.25rem;
+        }
+        .password-label {
+            font-size: 1.3rem;
+        }
+    }
+
+    /* Мобильные телефоны */
+    @media (max-width: 600px) {
+        .cyber-container {
+            gap: 0.75rem;
+        }
+
+        .panel {
+            padding: 0.75rem;
+        }
+
+        .panel-header {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .tabs {
+            gap: 0.5rem;
+        }
+
+        .tabs button {
+            font-size: 0.85rem;
+        }
+
+        /* Поле пароля */
+        .display-section {
+            margin-bottom: 0.75rem;
+        }
+
+        .password-label {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .password-field {
+            padding: 0.7rem 0.9rem;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            min-height: 2.5rem;
+        }
+
+        .actions {
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .action-btn {
+            font-size: 0.8rem;
+            padding: 0.5rem;
+        }
+
+        /* Энтропия */
+        .entropy-section {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .entropy-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .entropy-status {
+            font-size: 0.8rem;
+            margin-bottom: 0;
+        }
+
+        .entropy-value {
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+
+        .entropy-track {
+            height: 12px;
+        }
+
+        .marker {
+            top: -18px;
+        }
+
+        .marker::after {
+            height: 30px;
+        }
+
+        .marker span {
+            font-size: 0.65rem;
+        }
+
+        .crack-info {
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
+            flex-direction: column;
+            gap: 0.25rem;
+            align-items: flex-start;
+        }
+
+        .crack-label {
+            font-size: 0.75rem;
+        }
+
+        .crack-value {
+            font-size: 0.85rem;
+        }
+
+        /* Детали */
+        .details-toggle {
+            font-size: 0.8rem;
+        }
+
+        .detail-row {
+            padding: 0.3rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        /* Настройки */
+        .settings-section {
+            margin-bottom: 0.75rem;
+        }
+
+        .section-header {
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+
+        .setting-group {
+            margin-bottom: 0.5rem;
+        }
+
+        .slider-row {
+            padding: 0.6rem;
+        }
+
+        .slider-header {
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .slider-label {
+            font-size: 0.85rem;
+        }
+
+        .slider-value {
+            font-size: 1.1rem;
+        }
+
+        .slider-hint {
+            font-size: 0.8rem;
+            margin-left: unset;
+            width: 100%;
+        }
+
+        .select-row {
+            padding: 0.6rem;
+            gap: 0.4rem;
+        }
+
+        .select-label {
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        .select-hint {
+            font-size: 0.8rem;
+        }
+
+        .cyber-select {
+            font-size: 0.85rem;
+            padding: 0.4rem;
+            min-width: auto;
+        }
+
+        .switch-track {
+            height: 40px;
+        }
+
+        .label-off,
+        .label-on {
+            font-size: 0.75rem;
+        }
+
+        .checkbox-grid {
+            gap: 6px;
+        }
+
+        .cyber-check {
+            padding: 8px 10px;
+            gap: 8px;
+        }
+
+        .check-label {
+            font-size: 0.85rem;
+        }
+
+        .check-box {
+            width: 14px;
+            height: 14px;
+        }
+
+        .entropy-tag {
+            font-size: 0.75rem;
+        }
+
+        .char-count {
+            font-size: 0.8rem;
+        }
+
+        /* Словарь */
+        .dict-info {
+            padding: 0.6rem;
+            gap: 0.4rem;
+        }
+
+        .dict-label {
+            font-size: 0.8rem;
+        }
+
+        .dict-value {
+            font-size: 0.85rem;
+        }
+
+        .dict-separator {
+            font-size: 0.8rem;
+        }
+
+        /* Кнопка генерации */
+        .big-gen-btn {
+            padding: 0.8rem 1rem;
+            font-size: 1.1rem;
+            gap: 0.5rem;
+        }
+
+        /* Ошибка */
+        .error-msg {
+            padding: 0.6rem;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* История */
+        .history-panel .panel-header h3 {
+            font-size: 0.9rem;
+        }
+
+        .clear-btn {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+        }
+
+        .log-entry {
+            padding: 8px 10px;
+            gap: 8px;
+        }
+
+        .log-data {
+            font-size: 0.85rem;
+        }
+
+        .log-index {
+            font-size: 0.8rem;
+        }
+
+        .empty-log {
+            padding: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        /* Модалка QR */
+        .modal {
+            padding: 1rem;
+            gap: 1rem;
+            width: 300px;
+        }
+
+        .modal-header {
+            font-size: 0.95rem;
+        }
+
+        .close-btn {
+            font-size: 0.85rem;
+            padding: 0.7rem 1rem;
+        }
+    }
+
+    /* Очень маленькие экраны */
+    @media (max-width: 360px) {
+        .panel {
+            padding: 0.5rem;
+        }
+
+        .tabs button {
+            font-size: 0.75rem;
+        }
+
+        .password-label {
+            font-size: 0.95rem;
+        }
+
+        .password-field {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.7rem;
+            min-height: 2rem;
+        }
+
+        .action-btn {
+            font-size: 0.7rem;
+            padding: 0.4rem;
+        }
+
+        .slider-value {
+            font-size: 1rem;
+        }
+
+        .big-gen-btn {
+            font-size: 0.95rem;
+            padding: 0.6rem 0.8rem;
+        }
+    }
 </style>

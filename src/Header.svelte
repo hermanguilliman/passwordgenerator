@@ -126,8 +126,7 @@
     h1 {
         font-family: var(--font-main);
         font-weight: 700;
-        /* Уменьшили размер: было до 3rem, стало макс 2.2rem */
-        font-size: clamp(1.2rem, 5vw, 2.2rem);
+        font-size: clamp(1.1rem, 4.5vw, 2.2rem);
         margin: 0;
         letter-spacing: normal;
         line-height: 1;

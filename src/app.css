@@ -25,17 +25,20 @@ body {
     font-family: var(--font-main); /* Применяем шрифт */
     background-color: var(--dark-background);
     color: var(--text-color);
-    overflow-x: hidden;
+    overflow: hidden;
     font-weight: 500; /* Чуть жирнее для лучшей читаемости на черном */
 }
 
 #app {
     margin: 0 auto;
-    min-height: 100vh;
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     position: relative;
     z-index: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Эффект старого монитора (Scanlines) - сделали чуть мягче для нового шрифта */
@@ -67,6 +70,13 @@ main {
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
+}
+
+/* Адаптив: уменьшаем отступы на мобильных */
+@media (max-width: 600px) {
+    main {
+        padding: 0.5rem;
+    }
 }
 
 /* Кастомизация скроллбара */
