@@ -42,7 +42,16 @@
     let password: string = "";
     let error: string = "";
     let copied: boolean = false;
-    let history: string[] = [];
+    interface HistoryEntry {
+        password: string;
+        bits: number;
+        color: string;
+        label: string;
+        percent: number;
+        details: { label: string; bits: number }[];
+        crackTime: string;
+    }
+    let history: HistoryEntry[] = [];
     let showQR: boolean = false;
     let qrCanvas: HTMLCanvasElement;
 
@@ -167,6 +176,7 @@
         else if (mode === "xkcd") generateXKCD();
         else if (mode === "phonetic") generatePhonetic();
         calculateEntropy();
+        if (!error && password) addToHistory(password);
     };
 
     const generateStandard = (): void => {
@@ -200,7 +210,6 @@
         }
 
         password = chars.join("");
-        addToHistory(password);
     };
 
     const generateXKCD = (): void => {
@@ -230,7 +239,6 @@
         }
 
         password = pwd;
-        addToHistory(password);
     };
 
     // Генерация фонетического пароля
@@ -302,7 +310,6 @@
         }
 
         password = pwd;
-        addToHistory(password);
     };
 
     // Расчет бит на слог для фонетического режима
@@ -576,28 +583,55 @@
 
     // --- История ---
     const addToHistory = (pwd: string): void => {
-        if (!pwd || (history.length > 0 && history[0] === pwd)) return;
-        history = [pwd, ...history].slice(0, 20);
+        if (!pwd || (history.length > 0 && history[0].password === pwd)) return;
+        const entry: HistoryEntry = {
+            password: pwd,
+            bits: entropyBits,
+            color: entropyColor,
+            label: entropyLabel,
+            percent: entropyPercent,
+            details: [...entropyDetails],
+            crackTime,
+        };
+        history = [entry, ...history].slice(0, 20);
         localStorage.setItem("pwd_history", JSON.stringify(history));
     };
 
     const loadHistory = (): void => {
         try {
             const stored = localStorage.getItem("pwd_history");
-            if (stored) history = JSON.parse(stored);
+            if (!stored) return;
+            const parsed: unknown = JSON.parse(stored);
+            if (!Array.isArray(parsed)) return;
+            // Миграция старого формата (массив строк) на объекты со снимком энтропии
+            history = parsed.map((item) =>
+                typeof item === "string"
+                    ? {
+                          password: item,
+                          bits: 0,
+                          color: "var(--text-secondary)",
+                          label: "ЭНТРОПИЯ: НЕИЗВЕСТНА",
+                          percent: 0,
+                          details: [
+                              { label: "ВОССТАНОВЛЕНО ИЗ ЖУРНАЛА", bits: 0 },
+                          ],
+                          crackTime: "Н/Д",
+                      }
+                    : (item as HistoryEntry),
+            );
         } catch (e) {
             console.error("Failed to load history:", e);
         }
     };
 
-    const restoreFromHistory = (pwd: string): void => {
-        password = pwd;
-        entropyBits = 0;
-        entropyDetails = [{ label: "ВОССТАНОВЛЕНО ИЗ ЖУРНАЛА", bits: 0 }];
-        entropyLabel = "ЭНТРОПИЯ: НЕИЗВЕСТНА";
-        entropyColor = "var(--text-secondary)";
-        entropyPercent = 0;
-        crackTime = "Н/Д";
+    const restoreFromHistory = (entry: HistoryEntry): void => {
+        password = entry.password;
+        entropyBits = entry.bits;
+        entropyDetails = entry.details;
+        entropyLabel = entry.label;
+        entropyColor = entry.color;
+        entropyPercent = entry.percent;
+        crackTime = entry.crackTime;
         copyToClipboard();
     };
 
@@ -1178,7 +1212,7 @@
             {#each history as item, i}
                 <button class="hist-item" on:click={() => restoreFromHistory(item)}>
                     <span class="hist-i">{String(i + 1).padStart(2, "0")}</span>
-                    <span class="hist-pw">{item}</span>
+                    <span class="hist-pw">{item.password}</span>
                 </button>
             {/each}
             {#if history.length === 0}
