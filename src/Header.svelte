@@ -112,20 +112,13 @@
             <span class="lab lab-dark">DARK</span>
             <span class="lab lab-light">LIGHT</span>
             <span class="thumb">
-                <svg
+                <img
                     class="skull"
-                    viewBox="0 0 24 24"
+                    src="/skull_192.png"
+                    alt=""
                     aria-hidden="true"
-                    focusable="false"
-                >
-                    <path
-                        fill="currentColor"
-                        d="M12 2.5c-4.7 0-8 3.2-8 7.7 0 2.3 1 4 2.2 5.1.5.5.8.8.8 1.5v1.4c0 .9.7 1.6 1.6 1.6h.4v-1.6c0-.4.3-.7.7-.7s.7.3.7.7V19h1.8v-1.6c0-.4.3-.7.7-.7s.7.3.7.7V19h.4c.9 0 1.6-.7 1.6-1.6v-1.4c0-.7.3-1 .8-1.5C19 14 20 12.3 20 10c0-4.5-3.3-7.7-8-7.7Z"
-                    />
-                    <circle class="hole" cx="8.7" cy="10.2" r="1.9" />
-                    <circle class="hole" cx="15.3" cy="10.2" r="1.9" />
-                    <path class="hole" d="M12 11.6l-1.1 2.2h2.2z" />
-                </svg>
+                    draggable="false"
+                />
             </span>
         </span>
     </button>
@@ -286,10 +279,9 @@
     .skull {
         width: 24px;
         height: 24px;
-        color: var(--accent-contrast);
-    }
-    .skull .hole {
-        fill: var(--accent);
+        object-fit: contain;
+        display: block;
+        user-select: none;
     }
 
     @media (max-width: 480px) {
