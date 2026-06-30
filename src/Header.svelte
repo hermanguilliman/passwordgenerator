@@ -102,18 +102,19 @@
     </div>
 
     <div class="controls">
-        <div class="lang-switch" role="group" aria-label={$t("a11y.language")}>
-            <button
-                class:active={$lang === "ru"}
-                aria-pressed={$lang === "ru"}
-                on:click={() => setLang("ru")}>RU</button
-            >
-            <button
-                class:active={$lang === "en"}
-                aria-pressed={$lang === "en"}
-                on:click={() => setLang("en")}>EN</button
-            >
-        </div>
+        <button
+            class="lang-switch {$lang}"
+            role="switch"
+            aria-checked={$lang === "en"}
+            aria-label={$t("a11y.language")}
+            on:click={() => setLang($lang === "ru" ? "en" : "ru")}
+        >
+            <span class="track">
+                <span class="lab lab-ru">RU</span>
+                <span class="lab lab-en">EN</span>
+                <span class="thumb">{$lang === "ru" ? "RU" : "EN"}</span>
+            </span>
+        </button>
 
         <button
             class="skull-switch {theme}"
@@ -223,38 +224,41 @@
         flex-shrink: 0;
     }
 
-    /* Переключатель языка — сегментный тумблер RU/EN */
+    /* Переключатель языка — тумблер RU/EN с бегунком (как тема) */
     .lang-switch {
-        display: inline-flex;
-        height: 44px;
-        border: 2px solid var(--border-visible);
-        border-radius: 999px;
-        background: var(--surface-raised);
-        padding: 3px;
-        gap: 2px;
-    }
-    .lang-switch button {
-        min-width: 40px;
-        padding: 0 14px;
-        border: none;
-        border-radius: 999px;
         background: transparent;
+        border: none;
+        padding: 0;
         cursor: pointer;
+        flex-shrink: 0;
+    }
+    .lang-switch .lab-ru {
+        left: 14px;
+    }
+    .lang-switch .lab-en {
+        right: 14px;
+    }
+    /* Подпись под бегунком прячется, противоположная — подсвечивается */
+    .lang-switch.ru .lab-ru,
+    .lang-switch.en .lab-en {
+        opacity: 0;
+    }
+    .lang-switch.ru .lab-en,
+    .lang-switch.en .lab-ru {
+        color: var(--text-primary);
+    }
+    .lang-switch .thumb {
         font-family: var(--font-mono);
         font-size: var(--label);
         font-weight: 700;
         letter-spacing: 0.08em;
-        color: var(--text-disabled);
-        transition:
-            background 0.2s var(--motion),
-            color 0.2s var(--motion);
-    }
-    .lang-switch button:hover {
-        color: var(--text-primary);
-    }
-    .lang-switch button.active {
-        background: var(--accent);
         color: var(--accent-contrast);
+    }
+    .lang-switch.en .thumb {
+        left: calc(100% - 38px);
+    }
+    .lang-switch:active .thumb {
+        transform: translateY(-50%) scale(0.9);
     }
 
     /* Переключатель темы — тумблер с черепом-бегунком */
@@ -282,8 +286,22 @@
         transition: border-color 0.2s var(--motion);
     }
 
-    .skull-switch:hover .track {
+    .skull-switch:hover .track,
+    .lang-switch:hover .track {
         border-color: var(--accent);
+    }
+
+    /* Подписи по краям трека (используется языковым тумблером) */
+    .lab {
+        position: absolute;
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--text-disabled);
+        transition:
+            opacity 0.2s var(--motion),
+            color 0.2s var(--motion);
     }
 
     /* Фон тумблера — пейзаж, соответствующий активной теме */
