@@ -687,6 +687,8 @@
 
     const generateQR = async (): Promise<void> => {
         if (!password) return;
+        // Пароль, для которого показали QR, — осознанно использован: в журнал.
+        addToHistory(password);
         showQR = true;
         await tick();
         if (qrCanvas) {
