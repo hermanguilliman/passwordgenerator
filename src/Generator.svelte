@@ -19,7 +19,7 @@
     }
 
     // --- Состояние ---
-    let mode: "standard" | "xkcd" | "phonetic" = "standard";
+    let mode: "standard" | "xkcd" | "phonetic" | "fio" = "standard";
 
     // Standard Mode
     let length: number = 20;
@@ -46,6 +46,14 @@
     let phoneticNumberRange: "10" | "100" | "1000" = "100";
     let phoneticPattern: "cv" | "cvc" | "cvcc" | "ccvc" = "cv";
     let useCyrillicPhonetic: boolean = false;
+
+    // ФИО Mode — имитация имён из псевдо-имён (Ф И О)
+    let fioWordCount: number = 3;
+    let fioSyllablesPerWord: number = 3;
+    let fioSeparator: string = " ";
+    let fioIncludeNumber: boolean = false;
+    let fioNumberRange: "10" | "100" | "1000" = "100";
+    let useCyrillicFio: boolean = false;
 
     // Общие
     let password: string = "";
@@ -196,6 +204,7 @@
         if (mode === "standard") generateStandard();
         else if (mode === "xkcd") generateXKCD();
         else if (mode === "phonetic") generatePhonetic();
+        else if (mode === "fio") generateFio();
         calculateEntropy();
         if (record && !errorKey && password) addToHistory(password);
     };
@@ -337,6 +346,55 @@
         password = pwd;
     };
 
+    // Генерация пароля из псевдо-имён (режим ФИО)
+    const generateFio = (): void => {
+        const consonants = useCyrillicFio
+            ? CYRILLIC_CONSONANTS
+            : LATIN_CONSONANTS;
+        const vowels = useCyrillicFio ? CYRILLIC_VOWELS : LATIN_VOWELS;
+
+        // Имя-слово: N слогов CV + финальная согласная (последний слог CVC),
+        // чтобы слово звучало как настоящая фамилия/имя (Ковадан, Милетор).
+        const generateName = (): string => {
+            let word = "";
+            for (let i = 0; i < fioSyllablesPerWord; i++) {
+                word +=
+                    getSecureRandomChar(consonants) +
+                    getSecureRandomChar(vowels);
+            }
+            word += getSecureRandomChar(consonants);
+            // Имена всегда с заглавной буквы
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        };
+
+        const words: string[] = [];
+        for (let i = 0; i < fioWordCount; i++) {
+            words.push(generateName());
+        }
+
+        let pwd = words.join(fioSeparator);
+
+        if (fioIncludeNumber) {
+            const range = parseInt(fioNumberRange);
+            const num = secureRandomInt(range);
+            const padLength = fioNumberRange.length - 1;
+            pwd += fioSeparator + String(num).padStart(padLength, "0");
+        }
+
+        password = pwd;
+    };
+
+    // Бит на одно имя-слово: N слогов CV + финальная согласная
+    const getFioWordBits = (): number => {
+        const consonants = useCyrillicFio
+            ? CYRILLIC_CONSONANTS
+            : LATIN_CONSONANTS;
+        const vowels = useCyrillicFio ? CYRILLIC_VOWELS : LATIN_VOWELS;
+        const cBits = Math.log2(consonants.length);
+        const vBits = Math.log2(vowels.length);
+        return fioSyllablesPerWord * (cBits + vBits) + cBits;
+    };
+
     // Расчет бит на слог для фонетического режима
     const getPhoneticSyllableBits = (): number => {
         const consonants = useCyrillicPhonetic
@@ -412,6 +470,8 @@
             calculateXKCDEntropy();
         } else if (mode === "phonetic") {
             calculatePhoneticEntropy();
+        } else if (mode === "fio") {
+            calculateFioEntropy();
         }
     };
 
@@ -522,6 +582,34 @@
 
         if (phoneticIncludeNumber) {
             const range = parseInt(phoneticNumberRange);
+            const numBits = Math.log2(range);
+            totalBits += numBits;
+            entropyDetails.push({
+                key: "det.number",
+                params: { max: range - 1 },
+                bits: numBits,
+            });
+        }
+
+        entropyBits = totalBits;
+    };
+
+    // Расчет энтропии для режима ФИО
+    const calculateFioEntropy = (): void => {
+        let totalBits = 0;
+        const wordBits = getFioWordBits();
+
+        const namesEntropy = fioWordCount * wordBits;
+        totalBits += namesEntropy;
+
+        entropyDetails.push({
+            key: "det.names",
+            params: { count: fioWordCount },
+            bits: namesEntropy,
+        });
+
+        if (fioIncludeNumber) {
+            const range = parseInt(fioNumberRange);
             const numBits = Math.log2(range);
             totalBits += numBits;
             entropyDetails.push({
@@ -755,6 +843,15 @@
                     mode = "phonetic";
                     generate();
                 }}>{$t("mode.phonetic")}</button
+            >
+            <button
+                role="tab"
+                aria-selected={mode === "fio"}
+                class:active={mode === "fio"}
+                on:click={() => {
+                    mode = "fio";
+                    generate();
+                }}>{$t("mode.fio")}</button
             >
         </div>
 
@@ -1276,6 +1373,142 @@
                         })}</span
                     >
                 </div>
+            {:else if mode === "fio"}
+                <div class="field">
+                    <span class="label">{$t("set.alphabet")}</span>
+                    <div class="seg-control block">
+                        <button
+                            class:active={!useCyrillicFio}
+                            on:click={() => {
+                                useCyrillicFio = false;
+                                preview();
+                            }}
+                            >{$t("set.lat")} <span class="count"
+                                >{LATIN_CONSONANTS.length}C·{LATIN_VOWELS.length}V</span
+                            ></button
+                        >
+                        <button
+                            class:active={useCyrillicFio}
+                            on:click={() => {
+                                useCyrillicFio = true;
+                                preview();
+                            }}
+                            >{$t("set.cyr")} <span class="count"
+                                >{CYRILLIC_CONSONANTS.length}C·{CYRILLIC_VOWELS.length}V</span
+                            ></button
+                        >
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="field-head">
+                        <span class="label">{$t("set.nameLength")}</span>
+                        <span class="field-val">{fioSyllablesPerWord}</span>
+                        <span class="field-hint"
+                            >{$t("set.bitsPerWord", {
+                                v: getFioWordBits().toFixed(1),
+                            })}</span
+                        >
+                    </div>
+                    <input
+                        type="range"
+                        bind:value={fioSyllablesPerWord}
+                        min="2"
+                        max="6"
+                        on:input={preview}
+                        aria-label={$t("a11y.nameLength")}
+                    />
+                    <div class="range-minmax"><span>2</span><span>6</span></div>
+                </div>
+
+                <div class="field">
+                    <div class="field-head">
+                        <span class="label">{$t("set.nameCount")}</span>
+                        <span class="field-val">{fioWordCount}</span>
+                        <span class="field-hint"
+                            >{$t("set.bitsHint", {
+                                v: (
+                                    fioWordCount * getFioWordBits()
+                                ).toFixed(1),
+                            })}</span
+                        >
+                    </div>
+                    <input
+                        type="range"
+                        bind:value={fioWordCount}
+                        min="1"
+                        max="6"
+                        on:input={preview}
+                        aria-label={$t("a11y.nameCount")}
+                    />
+                    <div class="range-minmax"><span>1</span><span>6</span></div>
+                </div>
+
+                <div class="field">
+                    <span class="label">{$t("set.separator")}</span>
+                    <select
+                        bind:value={fioSeparator}
+                        on:change={preview}
+                        class="sel"
+                    >
+                        <option value=" ">{$t("sep.space")}</option>
+                        <option value="-">{$t("sep.dash")}</option>
+                        <option value="_">{$t("sep.underscore")}</option>
+                        <option value=".">{$t("sep.dot")}</option>
+                        <option value="">{$t("sep.none")}</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <div class="check-grid">
+                        <label class="check">
+                            <input
+                                type="checkbox"
+                                bind:checked={fioIncludeNumber}
+                                on:change={handleOptionChange}
+                            />
+                            <span class="box"></span>
+                            <span class="check-text"
+                                >{$t("chk.number")}
+                                <span class="tag plus"
+                                    >+{Math.log2(
+                                        parseInt(fioNumberRange)
+                                    ).toFixed(1)}</span
+                                ></span
+                            >
+                        </label>
+                    </div>
+                </div>
+
+                {#if fioIncludeNumber}
+                    <div class="field">
+                        <span class="label">{$t("set.numberRange")}</span>
+                        <select
+                            bind:value={fioNumberRange}
+                            on:change={preview}
+                            class="sel"
+                        >
+                            <option value="10">0-9</option>
+                            <option value="100">00-99</option>
+                            <option value="1000">000-999</option>
+                        </select>
+                    </div>
+                {/if}
+
+                <div class="data-row">
+                    <span
+                        >{$t("fio.dataRow", {
+                            words: fioWordCount,
+                            syll: fioSyllablesPerWord,
+                        })}</span
+                    >
+                    <span class="sep">=</span>
+                    <span class="hl"
+                        >{$t("fio.syllables", {
+                            n: fioWordCount * fioSyllablesPerWord,
+                        })}</span
+                    >
+                </div>
             {/if}
         </div>
 
@@ -1445,8 +1678,9 @@
     }
     .modes button {
         font-size: var(--body);
-        padding: 14px 12px;
-        letter-spacing: 0.1em;
+        padding: 14px 8px;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
     }
     .modes button:hover {
         color: var(--accent-ink);
@@ -2165,6 +2399,11 @@
     @media (max-width: 600px) {
         .modes {
             margin-bottom: var(--space-lg);
+        }
+        .modes button {
+            font-size: var(--caption);
+            padding: 12px 4px;
+            letter-spacing: 0.02em;
         }
         .pw-block {
             margin-bottom: var(--space-lg);

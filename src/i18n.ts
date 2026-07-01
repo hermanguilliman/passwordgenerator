@@ -45,6 +45,7 @@ const ru: Dict = {
     "mode.standard": "СТАНДАРТ",
     "mode.xkcd": "XKCD",
     "mode.phonetic": "ФОНЕТИК",
+    "mode.fio": "ФИО",
 
     // --- Блок пароля ---
     "pw.label": "// ПАРОЛЬ",
@@ -98,6 +99,7 @@ const ru: Dict = {
     "det.randomCase": "СЛУЧ. РЕГИСТР ×{count}",
     "det.number": "ЧИСЛО [0-{max}]",
     "det.syllables": "СЛОГИ [{pattern}] ×{count}",
+    "det.names": "ИМЕНА ×{count}",
 
     // --- Параметры ---
     "set.label": "// ПАРАМЕТРЫ",
@@ -130,6 +132,12 @@ const ru: Dict = {
     "set.bitsHintPlus": "+{v} бит",
     "phon.dataRow": "{words} слов × {syll} слогов",
     "phon.syllables": "{n} слогов",
+    "set.nameLength": "ДЛИНА ИМЕНИ (СЛОГОВ)",
+    "a11y.nameLength": "Длина имени в слогах",
+    "set.nameCount": "КОЛИЧЕСТВО ИМЁН",
+    "a11y.nameCount": "Количество имён",
+    "fio.dataRow": "{words} имён × {syll} слогов",
+    "fio.syllables": "{n} слогов",
     "pat.cv": "CV (ба, ке, ми)",
     "pat.cvc": "CVC (бак, кем, мир)",
     "pat.cvcc": "CVCC (банк, керн)",
@@ -163,6 +171,7 @@ const en: Dict = {
     "mode.standard": "STANDARD",
     "mode.xkcd": "XKCD",
     "mode.phonetic": "PHONETIC",
+    "mode.fio": "FULL NAME",
 
     // --- Password block ---
     "pw.label": "// PASSWORD",
@@ -216,6 +225,7 @@ const en: Dict = {
     "det.randomCase": "RANDOM CASE ×{count}",
     "det.number": "NUMBER [0-{max}]",
     "det.syllables": "SYLLABLES [{pattern}] ×{count}",
+    "det.names": "NAMES ×{count}",
 
     // --- Settings ---
     "set.label": "// PARAMETERS",
@@ -248,6 +258,12 @@ const en: Dict = {
     "set.bitsHintPlus": "+{v} bits",
     "phon.dataRow": "{words} words × {syll} syllables",
     "phon.syllables": "{n} syllables",
+    "set.nameLength": "NAME LENGTH (SYLLABLES)",
+    "a11y.nameLength": "Name length in syllables",
+    "set.nameCount": "NAME COUNT",
+    "a11y.nameCount": "Name count",
+    "fio.dataRow": "{words} names × {syll} syllables",
+    "fio.syllables": "{n} syllables",
     "pat.cv": "CV (ba, ke, mi)",
     "pat.cvc": "CVC (bak, kem, mir)",
     "pat.cvcc": "CVCC (bank, kern)",
