@@ -167,7 +167,10 @@
     const secureRandomInt = (max: number): number => {
         if (max <= 0) return 0;
         const randomBuffer = new Uint32Array(1);
-        const maxValid = Math.floor(0xffffffff / max) * max;
+        // Диапазон Uint32 — [0, 2^32). Отсекаем «хвост», не кратный max,
+        // чтобы rejection sampling давал строго равномерное распределение.
+        const range = 0x100000000; // 2^32
+        const maxValid = Math.floor(range / max) * max;
 
         do {
             crypto.getRandomValues(randomBuffer);
@@ -182,15 +185,23 @@
         str.charAt(secureRandomInt(str.length));
 
     // --- Генерация ---
-    const generate = (): void => {
+    // record=true — записать результат в журнал (явные действия: кнопки,
+    // смена режима, копирование). record=false — «живой» предпросмотр при
+    // перетаскивании ползунков и смене настроек, чтобы не засорять журнал.
+    // Проверяем errorKey напрямую: реактивная `error` внутри этого вызова
+    // ещё не обновлена (реактивные $:-выражения выполняются после тика).
+    const generate = (record: boolean = true): void => {
         errorKey = "";
         errorParams = undefined;
         if (mode === "standard") generateStandard();
         else if (mode === "xkcd") generateXKCD();
         else if (mode === "phonetic") generatePhonetic();
         calculateEntropy();
-        if (!error && password) addToHistory(password);
+        if (record && !errorKey && password) addToHistory(password);
     };
+
+    // Предпросмотр без записи в журнал — для настроек и ползунков
+    const preview = (): void => generate(false);
 
     const generateStandard = (): void => {
         const categories = getActiveCategories();
@@ -450,7 +461,12 @@
 
         const upperBound = L * Math.log2(N);
         entropyBits = Math.min(totalBits, upperBound);
-        entropyDetails.push({ key: "det.upperBound", bits: upperBound });
+        // Строку «верхняя граница» показываем только когда она реально
+        // ограничивает итог, иначе она сбивает с толку (число больше суммы,
+        // хотя в сумму не входит).
+        if (totalBits > upperBound) {
+            entropyDetails.push({ key: "det.upperBound", bits: upperBound });
+        }
     };
 
     const calculateXKCDEntropy = (): void => {
@@ -596,14 +612,23 @@
 
     // --- История ---
     const addToHistory = (pwd: string): void => {
-        if (!pwd || (history.length > 0 && history[0].password === pwd)) return;
+        if (!pwd) return;
         const entry: HistoryEntry = {
             password: pwd,
             bits: entropyBits,
             details: [...entropyDetails],
         };
-        history = [entry, ...history].slice(0, 20);
-        localStorage.setItem("pwd_history", JSON.stringify(history));
+        // Полный дедуп: убираем прежнее вхождение и поднимаем запись наверх
+        // (актуально при копировании/восстановлении уже виденного пароля).
+        history = [entry, ...history.filter((h) => h.password !== pwd)].slice(
+            0,
+            20,
+        );
+        try {
+            localStorage.setItem("pwd_history", JSON.stringify(history));
+        } catch (e) {
+            console.error("Failed to save history:", e);
+        }
     };
 
     const loadHistory = (): void => {
@@ -652,6 +677,8 @@
         try {
             await navigator.clipboard.writeText(password);
             copied = true;
+            // Пароль, который скопировали, — осознанно использован: в журнал.
+            addToHistory(password);
             setTimeout(() => (copied = false), 2000);
         } catch {
             errorKey = "err.clipboard";
@@ -663,14 +690,18 @@
         showQR = true;
         await tick();
         if (qrCanvas) {
-            // Чёрные модули на токсично-зелёном фоне: тематично и сохраняет
-            // правильную полярность (тёмное на светлом) для надёжного сканирования
-            QRCode.toCanvas(qrCanvas, password, {
-                width: 320,
-                margin: 2,
-                color: { dark: "#000000", light: "#9ef523" },
-                errorCorrectionLevel: "M",
-            });
+            try {
+                // Чёрные модули на токсично-зелёном фоне: тематично и сохраняет
+                // правильную полярность (тёмное на светлом) для надёжного сканирования
+                await QRCode.toCanvas(qrCanvas, password, {
+                    width: 320,
+                    margin: 2,
+                    color: { dark: "#000000", light: "#9ef523" },
+                    errorCorrectionLevel: "M",
+                });
+            } catch (e) {
+                console.error("QR generation failed:", e);
+            }
         }
     };
 
@@ -680,11 +711,17 @@
     const handleBackdropClick = (e: MouseEvent): void => {
         if (e.target === e.currentTarget) closeQR();
     };
-    const handleOptionChange = (): void => generate();
+    // Закрытие модалки по Escape независимо от фокуса
+    const handleWindowKeydown = (e: KeyboardEvent): void => {
+        if (showQR && e.key === "Escape") closeQR();
+    };
+    const handleOptionChange = (): void => preview();
     const toggleDetails = (): void => {
         showDetails = !showDetails;
     };
 </script>
+
+<svelte:window on:keydown={handleWindowKeydown} />
 
 <div class="app-grid">
     <section class="card generator">
@@ -759,7 +796,7 @@
                 </button>
                 <button
                     class="btn btn-secondary icon"
-                    on:click={generate}
+                    on:click={() => generate()}
                     title={$t("refresh.title")}
                     aria-label={$t("a11y.refresh")}>↻</button
                 >
@@ -854,7 +891,7 @@
                             class:active={!useCyrillic}
                             on:click={() => {
                                 useCyrillic = false;
-                                generate();
+                                preview();
                             }}
                             >{$t("set.lat")} <span class="count"
                                 >{LATIN_LOWER.length * 2}</span
@@ -864,7 +901,7 @@
                             class:active={useCyrillic}
                             on:click={() => {
                                 useCyrillic = true;
-                                generate();
+                                preview();
                             }}
                             >{$t("set.cyr")} <span class="count"
                                 >{CYRILLIC_LOWER.length * 2}</span
@@ -883,7 +920,7 @@
                         bind:value={length}
                         min="4"
                         max="64"
-                        on:input={generate}
+                        on:input={preview}
                         aria-label={$t("a11y.length")}
                     />
                     <div class="range-minmax"><span>4</span><span>64</span></div>
@@ -965,7 +1002,7 @@
                         bind:value={wordCount}
                         min="3"
                         max="12"
-                        on:input={generate}
+                        on:input={preview}
                         aria-label={$t("a11y.wordCount")}
                     />
                     <div class="range-minmax"><span>3</span><span>12</span></div>
@@ -975,7 +1012,7 @@
                     <span class="label">{$t("set.separator")}</span>
                     <select
                         bind:value={separator}
-                        on:change={generate}
+                        on:change={preview}
                         class="sel"
                     >
                         <option value="-">{$t("sep.dash")}</option>
@@ -998,7 +1035,7 @@
                     </div>
                     <select
                         bind:value={numberRange}
-                        on:change={generate}
+                        on:change={preview}
                         class="sel"
                         disabled={!includeNumberXKCD}
                     >
@@ -1080,7 +1117,7 @@
                             class:active={!useCyrillicPhonetic}
                             on:click={() => {
                                 useCyrillicPhonetic = false;
-                                generate();
+                                preview();
                             }}
                             >{$t("set.lat")} <span class="count"
                                 >{LATIN_CONSONANTS.length}C·{LATIN_VOWELS.length}V</span
@@ -1090,7 +1127,7 @@
                             class:active={useCyrillicPhonetic}
                             on:click={() => {
                                 useCyrillicPhonetic = true;
-                                generate();
+                                preview();
                             }}
                             >{$t("set.cyr")} <span class="count"
                                 >{CYRILLIC_CONSONANTS.length}C·{CYRILLIC_VOWELS.length}V</span
@@ -1110,7 +1147,7 @@
                     </div>
                     <select
                         bind:value={phoneticPattern}
-                        on:change={generate}
+                        on:change={preview}
                         class="sel"
                     >
                         <option value="cv">{$t("pat.cv")}</option>
@@ -1130,7 +1167,7 @@
                         bind:value={syllablesPerWord}
                         min="2"
                         max="6"
-                        on:input={generate}
+                        on:input={preview}
                         aria-label={$t("a11y.syllPerWord")}
                     />
                     <div class="range-minmax"><span>2</span><span>6</span></div>
@@ -1155,7 +1192,7 @@
                         bind:value={phoneticWordCount}
                         min="2"
                         max="6"
-                        on:input={generate}
+                        on:input={preview}
                         aria-label={$t("a11y.wordCount")}
                     />
                     <div class="range-minmax"><span>2</span><span>6</span></div>
@@ -1165,7 +1202,7 @@
                     <span class="label">{$t("set.separator")}</span>
                     <select
                         bind:value={phoneticSeparator}
-                        on:change={generate}
+                        on:change={preview}
                         class="sel"
                     >
                         <option value="-">{$t("sep.dash")}</option>
@@ -1213,7 +1250,7 @@
                         <span class="label">{$t("set.numberRange")}</span>
                         <select
                             bind:value={phoneticNumberRange}
-                            on:change={generate}
+                            on:change={preview}
                             class="sel"
                         >
                             <option value="10">0-9</option>
@@ -1244,7 +1281,7 @@
             <div class="inline-error">{$t("err.prefix")} {error}</div>
         {/if}
 
-        <button class="btn btn-generate" on:click={generate}>
+        <button class="btn btn-generate" on:click={() => generate()}>
             {$t("btn.generate")}
         </button>
     </section>
