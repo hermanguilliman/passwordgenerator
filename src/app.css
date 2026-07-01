@@ -1,14 +1,16 @@
 /* ============================================================
    G-PASS TERMINAL — Nothing-inspired design system
    Монохромная база + зелёный сигнальный акцент (#9ef523)
-   Шрифты подключаются в index.html (Doto, Space Grotesk, Space Mono)
+   Шрифты подключаются в index.html (Doto — display; JetBrains Mono — текст)
    ============================================================ */
 
 :root {
-    /* --- Шрифты --- */
-    --font-display: "Doto", "Space Mono", monospace;
-    --font-sans: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-    --font-mono: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+    /* --- Шрифты ---
+       Doto — декоративный display (латиница/цифры: G-PASS, число бит).
+       JetBrains Mono — основной текст: латиница + кириллица «из коробки». */
+    --font-display: "Doto", "JetBrains Mono", monospace;
+    --font-sans: "JetBrains Mono", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "SF Mono", monospace;
     /* Совместимость со старыми ссылками */
     --font-main: var(--font-mono);
 
