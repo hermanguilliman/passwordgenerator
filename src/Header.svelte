@@ -103,38 +103,38 @@
 
     <div class="controls">
         <button
-            class="lang-switch {$lang}"
+            class="icon-btn lang-btn"
             role="switch"
             aria-checked={$lang === "en"}
             aria-label={$t("a11y.language")}
             on:click={() => setLang($lang === "ru" ? "en" : "ru")}
-        >
-            <span class="track">
-                <span class="lab lab-ru">RU</span>
-                <span class="lab lab-en">EN</span>
-                <span class="thumb">{$lang === "ru" ? "RU" : "EN"}</span>
-            </span>
-        </button>
+        >{$lang.toUpperCase()}</button>
 
         <button
-            class="skull-switch {theme}"
+            class="icon-btn theme-btn {theme}"
             role="switch"
             aria-checked={theme === "light"}
             aria-label={$t("a11y.theme")}
             title={theme === "dark" ? $t("theme.dark") : $t("theme.light")}
             on:click={() => applyTheme(theme === "dark" ? "light" : "dark")}
         >
-            <span class="track">
-                <span class="thumb">
-                    <img
-                        class="skull"
-                        src="/skull_192.webp"
-                        alt=""
-                        aria-hidden="true"
-                        draggable="false"
-                    />
-                </span>
-            </span>
+            {#if theme === "dark"}
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            {:else}
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+            {/if}
         </button>
     </div>
 </header>
@@ -224,123 +224,44 @@
         flex-shrink: 0;
     }
 
-    /* Переключатель языка — тумблер RU/EN с бегунком (как тема) */
-    .lang-switch {
-        background: transparent;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-    .lang-switch .lab-ru {
-        left: 14px;
-    }
-    .lang-switch .lab-en {
-        right: 14px;
-    }
-    /* Подпись под бегунком прячется, противоположная — подсвечивается */
-    .lang-switch.ru .lab-ru,
-    .lang-switch.en .lab-en {
-        opacity: 0;
-    }
-    .lang-switch.ru .lab-en,
-    .lang-switch.en .lab-ru {
-        color: var(--text-primary);
-    }
-    .lang-switch .thumb {
-        font-family: var(--font-mono);
-        font-size: var(--label);
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        color: var(--accent-contrast);
-    }
-    .lang-switch.en .thumb {
-        left: calc(100% - 38px);
-    }
-    .lang-switch:active .thumb {
-        transform: translateY(-50%) scale(0.9);
-    }
-
-    /* Переключатель темы — тумблер с черепом-бегунком */
-    .skull-switch {
-        background: transparent;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-
-    .track {
-        position: relative;
-        display: flex;
-        align-items: center;
-        width: 104px;
-        height: 44px;
-        border: 2px solid var(--border-visible);
-        border-radius: 999px;
-        background-color: var(--surface-raised);
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        overflow: hidden;
-        transition: border-color 0.2s var(--motion);
-    }
-
-    .skull-switch:hover .track,
-    .lang-switch:hover .track {
-        border-color: var(--accent);
-    }
-
-    /* Подписи по краям трека (используется языковым тумблером) */
-    .lab {
-        position: absolute;
-        font-family: var(--font-mono);
-        font-size: var(--label);
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        color: var(--text-disabled);
-        transition:
-            opacity 0.2s var(--motion),
-            color 0.2s var(--motion);
-    }
-
-    /* Фон тумблера — пейзаж, соответствующий активной теме */
-    .skull-switch.dark .track {
-        background-image: url("/night.png");
-    }
-    .skull-switch.light .track {
-        background-image: url("/day.png");
-    }
-
-    .thumb {
-        position: absolute;
-        top: 50%;
-        left: 4px;
-        transform: translateY(-50%);
-        width: 34px;
-        height: 34px;
+    /* Компактные кнопки-иконки */
+    .icon-btn {
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: var(--accent);
+        border: 2px solid var(--border-visible);
+        background: var(--surface-raised);
+        cursor: pointer;
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         transition:
-            left 0.3s var(--motion),
-            transform 0.15s var(--motion);
+            border-color 0.2s var(--motion),
+            transform 0.15s var(--motion),
+            background 0.2s var(--motion);
     }
-    .skull-switch.light .thumb {
-        left: calc(100% - 38px);
+    .icon-btn:hover {
+        border-color: var(--accent);
     }
-    .skull-switch:active .thumb {
-        transform: translateY(-50%) scale(0.9);
+    .icon-btn:active {
+        transform: scale(0.92);
     }
 
-    .skull {
-        width: 24px;
-        height: 24px;
-        object-fit: contain;
-        display: block;
-        user-select: none;
+    /* Кнопка языка — текст внутри */
+    .lang-btn {
+        font-family: var(--font-mono);
+        font-size: var(--label);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--text-primary);
+    }
+
+    /* Кнопка темы — SVG иконка */
+    .theme-btn .icon {
+        width: 18px;
+        height: 18px;
+        color: var(--text-primary);
     }
 
     @media (max-width: 480px) {
