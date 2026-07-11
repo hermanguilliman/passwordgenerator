@@ -20,26 +20,27 @@
                 }
             })();
         </script>
-        <link rel="icon" type="image/svg+xml" href="/icon_512.png" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/webp" href="/icon_512.webp" />
         <link
             rel="icon"
-            type="image/png"
+            type="image/webp"
             sizes="16x16"
-            href="/favicon-16x16.png"
+            href="/favicon-16x16.webp"
         />
         <link
             rel="icon"
-            type="image/png"
+            type="image/webp"
             sizes="32x32"
-            href="/favicon-32x32.png"
+            href="/favicon-32x32.webp"
         />
         <link
             rel="apple-touch-icon"
             sizes="180x180"
-            href="/apple-touch-icon.png"
+            href="/apple-touch-icon.webp"
         />
-        <link rel="icon" sizes="192x192" href="/android-chrome-192x192.png" />
-        <link rel="icon" sizes="512x512" href="/android-chrome-512x512.png" />
+        <link rel="icon" type="image/webp" sizes="192x192" href="/android-chrome-192x192.webp" />
+        <link rel="icon" type="image/webp" sizes="512x512" href="/android-chrome-512x512.webp" />
         <meta
             name="viewport"
             content="width=device-width, initial-scale=1.0"
@@ -69,17 +70,33 @@
             rel="stylesheet"
         />
 
-        <meta property="og:title" content="Генератор паролей" />
+        <title>G-PASS TERMINAL — Криптографически безопасный генератор паролей</title>
+
+        <!-- Open Graph -->
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="ru_RU" />
+        <meta property="og:site_name" content="G-PASS TERMINAL" />
+        <meta property="og:title" content="G-PASS TERMINAL — Криптографически безопасный генератор паролей" />
         <meta
             property="og:description"
-            content="Продвинутый генератор паролей для создания сложных паролей на латинице и кириллице"
+            content="Три режима генерации: стандартный, XKCD и фонетический. Расчёт энтропии, кириллица, киберпанк-интерфейс."
         />
+        <meta property="og:url" content="https://password.guilliman.ru/" />
+        <meta property="og:image" content="https://password.guilliman.ru/og_image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="G-PASS TERMINAL — криптографически безопасный генератор паролей" />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="G-PASS TERMINAL — Криптографически безопасный генератор паролей" />
         <meta
-            property="og:image"
-            content="https://guillmanpass.netlify.app//icon_512.png"
+            name="twitter:description"
+            content="Три режима генерации: стандартный, XKCD и фонетический. Расчёт энтропии, кириллица, киберпанк-интерфейс."
         />
+        <meta name="twitter:image" content="https://password.guilliman.ru/og.png" />
+
         <meta name="yandex-verification" content="fa4e4208c000c31a" />
-        <title>G-PASS TERMINAL</title>
     </head>
     <body>
         <div id="app"></div>

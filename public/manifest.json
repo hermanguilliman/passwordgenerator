@@ -4,9 +4,9 @@
   "name": "Генератор паролей",
   "icons": [
     {
-      "src": "/icon_512.png",
+      "src": "/icon_512.webp",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/webp"
     }
   ],
   "start_url": "/",

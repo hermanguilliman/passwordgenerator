@@ -128,7 +128,7 @@
                 <span class="thumb">
                     <img
                         class="skull"
-                        src="/skull_192.png"
+                        src="/skull_192.webp"
                         alt=""
                         aria-hidden="true"
                         draggable="false"
