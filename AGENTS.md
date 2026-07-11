@@ -22,7 +22,7 @@ PWA via `vite-plugin-pwa` (autoUpdate). Manifest icons are `.webp` files in `pub
 - No state management library; all state is local to Generator.svelte.
 - Crypto RNG: `crypto.getRandomValues()` with rejection sampling (`secureRandomInt`).
 - Design tokens: `--toxic-green: #9ef523`, font JetBrains Mono, dark background `#0a0a0a`.
-- OG image: `public/og.png` (1200×630), referenced in `index.html` OG + Twitter Card meta tags.
+- OG image: `public/og_image.png` (1200×630), referenced in `index.html` OG + Twitter Card meta tags.
 
 ## Gotchas
 
