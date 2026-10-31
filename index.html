@@ -1,108 +1,261 @@
 <!DOCTYPE html>
 <html lang="ru">
-    <head>
-        <meta charset="UTF-8" />
-        <script>
-            // Инициализация темы до отрисовки (без мигания)
-            (function () {
-                try {
-                    var t = localStorage.getItem("gpass_theme");
-                    if (!t) {
-                        t = window.matchMedia(
-                            "(prefers-color-scheme: light)"
-                        ).matches
-                            ? "light"
-                            : "dark";
-                    }
-                    document.documentElement.setAttribute("data-theme", t);
-                } catch (e) {
-                    document.documentElement.setAttribute("data-theme", "dark");
+
+<head>
+    <meta charset="UTF-8" />
+    <script>
+        // Инициализация темы до отрисовки (без мигания)
+        (function () {
+            try {
+                var t = localStorage.getItem("gpass_theme");
+                if (!t) {
+                    t = window.matchMedia(
+                        "(prefers-color-scheme: light)"
+                    ).matches
+                        ? "light"
+                        : "dark";
                 }
-            })();
-        </script>
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="icon" type="image/webp" href="/icon_512.webp" />
-        <link
-            rel="icon"
-            type="image/webp"
-            sizes="16x16"
-            href="/favicon-16x16.webp"
-        />
-        <link
-            rel="icon"
-            type="image/webp"
-            sizes="32x32"
-            href="/favicon-32x32.webp"
-        />
-        <link
-            rel="apple-touch-icon"
-            sizes="180x180"
-            href="/apple-touch-icon.webp"
-        />
-        <link rel="icon" type="image/webp" sizes="192x192" href="/android-chrome-192x192.webp" />
-        <link rel="icon" type="image/webp" sizes="512x512" href="/android-chrome-512x512.webp" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-        />
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="yandex-verification" content="51133ed144e8f7d1" />
-        <meta
-            name="apple-mobile-web-app-status-bar-style"
-            content="black-translucent"
-        />
-        <link rel="manifest" href="/manifest.json" />
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
-        />
-        <meta name="theme-color" content="#000000" />
+                document.documentElement.setAttribute("data-theme", t);
+            } catch (e) {
+                document.documentElement.setAttribute("data-theme", "dark");
+            }
+        })();
+    </script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/webp" href="/icon_512.webp" />
+    <link rel="icon" type="image/webp" sizes="16x16" href="/favicon-16x16.webp" />
+    <link rel="icon" type="image/webp" sizes="32x32" href="/favicon-32x32.webp" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.webp" />
+    <link rel="icon" type="image/webp" sizes="192x192" href="/android-chrome-192x192.webp" />
+    <link rel="icon" type="image/webp" sizes="512x512" href="/android-chrome-512x512.webp" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="yandex-verification" content="51133ed144e8f7d1" />
+    <meta name="yandex-verification" content="fa4e4208c000c31a" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+    <meta name="theme-color" content="#000000" />
 
-        <!-- Шрифты дизайн-системы -->
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossorigin
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Doto:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap"
-            rel="stylesheet"
-        />
-        <link rel="canonical" href="https://password.guilliman.ru" />
+    <!-- Шрифты дизайн-системы -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Doto:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="canonical" href="https://password.guilliman.ru/" />
 
+    <title>Генератор криптостойких паролей онлайн (XKCD, фонетический, кириллица, ФИО) — G-PASS TERMINAL</title>
+    <meta name="description"
+        content="Бесплатный генератор сложных и безопасных паролей в браузере: 4 режима (стандартный, мнемонические фразы XKCD, фонетический произносимый и ФИО), поддержка кириллицы, спецсимволов и расчёт энтропии." />
+    <meta name="keywords"
+        content="генератор паролей онлайн, создать сложный пароль, криптостойкий пароль, генератор паролей xkcd, фонетический генератор паролей, пароль на кириллице, расчет энтропии пароля, password.guilliman.ru" />
+    <meta name="author" content="Herman Guilliman" />
 
-        <title>G-PASS TERMINAL — безопасный генератор паролей</title>
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:site_name" content="G-PASS TERMINAL" />
+    <meta property="og:title" content="G-PASS TERMINAL — генератор криптостойких паролей онлайн" />
+    <meta property="og:description"
+        content="Четыре режима генерации: стандартный, XKCD, фонетический и ФИО. Расчёт энтропии, кириллица и локальная работа в браузере." />
+    <meta property="og:url" content="https://password.guilliman.ru/" />
+    <meta property="og:image" content="https://password.guilliman.ru/og-image.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="G-PASS TERMINAL — безопасный генератор паролей" />
 
-        <!-- Open Graph -->
-        <meta property="og:type" content="website" />
-        <meta property="og:locale" content="ru_RU" />
-        <meta property="og:site_name" content="G-PASS TERMINAL" />
-        <meta property="og:title" content="G-PASS TERMINAL — безопасный генератор паролей" />
-        <meta
-            property="og:description"
-            content="Четыре режима генерации: стандартный, XKCD, фонетический и ФИО. Расчёт энтропии, кириллица, киберпанк-интерфейс."
-        />
-        <meta name="description" content="Четыре режима генерации: стандартный, XKCD, фонетический и ФИО. Расчёт энтропии, кириллица, киберпанк-интерфейс." />
-        <meta property="og:url" content="https://password.guilliman.ru/" />
-        <meta property="og:image" content="https://password.guilliman.ru/og-image.webp" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="G-PASS TERMINAL — безопасный генератор паролей" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="G-PASS TERMINAL — генератор криптостойких паролей онлайн" />
+    <meta name="twitter:description"
+        content="Четыре режима генерации: стандартный, XKCD, фонетический и ФИО. Расчёт энтропии, кириллица и локальная работа в браузере." />
+    <meta name="twitter:image" content="https://password.guilliman.ru/og-image.webp" />
 
-        <!-- Twitter Card -->
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="G-PASS TERMINAL — безопасный генератор паролей" />
-        <meta
-            name="twitter:description"
-            content="Три режима генерации: стандартный, XKCD и фонетический. Расчёт энтропии, кириллица, киберпанк-интерфейс."
-        />
-        <meta name="twitter:image" content="https://password.guilliman.ru/og.png" />
+    <!-- Микроразметка Schema.org для поисковиков -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "G-PASS TERMINAL — генератор криптостойких паролей",
+        "url": "https://password.guilliman.ru/",
+        "description": "Бесплатный клиентский генератор криптостойких паролей с расчётом энтропии: стандартный режим, мнемонические парольные фразы XKCD, фонетические пароли, генератор ФИО и поддержка кириллицы.",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All",
+        "inLanguage": "ru",
+        "isPartOf": {
+            "@type": "WebSite",
+            "name": "Guilliman's Lab",
+            "url": "https://guilliman.ru/"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "RUB"
+        }
+    }
+    </script>
 
-        <meta name="yandex-verification" content="fa4e4208c000c31a" />
-    </head>
-    <body>
-        <div id="app"></div>
-        <script type="module" src="/src/main.ts"></script>
-    </body>
+    <!-- Yandex.RTB -->
+    <script>window.yaContextCb = window.yaContextCb || []</script>
+    <script src="https://yandex.ru/ads/system/context.js" async></script>
+</head>
+
+<body>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+            (function (m, e, t, r, i, k, a) {
+                m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+                m[i].l = 1 * new Date();
+                for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) { return; } }
+                k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+            })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=113961955', 'ym');
+
+        ym(113961955, 'init', { ssr: true, webvisor: true, clickmap: true, ecommerce: "dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce: true, trackLinks: true });
+    </script>
+    <noscript>
+        <div><img src="https://mc.yandex.ru/watch/113961955" style="position:absolute; left:-9999px;" alt="" /></div>
+    </noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <!-- Главный заголовок для поисковиков и скринридеров -->
+    <h1 class="sr-only">G-PASS TERMINAL — онлайн-генератор криптостойких паролей (стандартный, XKCD, фонетический,
+        кириллица)</h1>
+
+    <div id="app"></div>
+
+    <!-- Кнопка открытия всех проектов Guilliman's Lab -->
+    <button type="button" class="hub-fab" id="hubBtn" aria-label="Все проекты Guilliman's Lab"
+        title="Все проекты Guilliman's Lab">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+        </svg>
+        <span>Проекты</span>
+    </button>
+
+    <!-- Модальное окно: Все проекты Guilliman's Lab + РСЯ + SEO-описание -->
+    <dialog class="hub-dialog" id="hubDialog" aria-labelledby="hubDialogTitle">
+        <div class="hub-dialog__head">
+            <span class="hub-dialog__title" id="hubDialogTitle">Guilliman's Lab — Все проекты и о сервисе</span>
+            <button type="button" class="hub-dialog__close" id="hubCloseBtn" aria-label="Закрыть">✕</button>
+        </div>
+        <div class="hub-dialog__body">
+            <nav aria-label="Проекты Guilliman's Lab">
+                <div class="hub-grid-links">
+                    <a class="hub-link-card" href="https://guilliman.ru/" target="_blank" rel="noopener">
+                        <b>guilliman.ru <span>↗</span></b>
+                        <span>Центральный хаб всех проектов и утилит</span>
+                    </a>
+                    <a class="hub-link-card" href="https://blog.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>blog.guilliman.ru <span>↗</span></b>
+                        <span>Блог — статьи, заметки и публикации</span>
+                    </a>
+                    <a class="hub-link-card" href="https://radio.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>radio.guilliman.ru <span>↗</span></b>
+                        <span>Онлайн-радио и генератор плейлистов M3U8</span>
+                    </a>
+                    <a class="hub-link-card" href="https://input.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>input.guilliman.ru <span>↗</span></b>
+                        <span>Диагностика мыши, клавиатуры и периферии</span>
+                    </a>
+                    <a class="hub-link-card" href="https://stl.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>stl.guilliman.ru <span>↗</span></b>
+                        <span>Онлайн 3D-просмотрщик STL-моделей</span>
+                    </a>
+                    <a class="hub-link-card" href="https://md.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>md.guilliman.ru <span>↗</span></b>
+                        <span>Быстрый конвертер HTML в Markdown</span>
+                    </a>
+                    <a class="hub-link-card" href="https://keytag.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>keytag.guilliman.ru <span>↗</span></b>
+                        <span>Редактор и печать бирок для ключей</span>
+                    </a>
+                    <a class="hub-link-card" href="https://tartan.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>tartan.guilliman.ru <span>↗</span></b>
+                        <span>Генератор шотландских клетчатых узоров</span>
+                    </a>
+                    <a class="hub-link-card" href="https://walgen.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>walgen.guilliman.ru <span>↗</span></b>
+                        <span>Генератор обоев по формулам</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Yandex.RTB R-A-20314528-1 -->
+            <div id="yandex_rtb_R-A-20314528-1"></div>
+
+            <section class="hub-seo-text" aria-label="О генераторе паролей G-PASS TERMINAL">
+                <h2>G-PASS TERMINAL — онлайн-генератор криптостойких паролей с расчётом энтропии</h2>
+                <p>
+                    <strong>G-PASS TERMINAL (password.guilliman.ru)</strong> — безопасный клиентский генератор паролей,
+                    работающий на основе криптографически стойкого датчика случайных чисел браузера (Web Crypto API) без
+                    передачи данных по сети. Доступны 4 режима: <strong>стандартный символьный</strong>, запоминающиеся
+                    парольные фразы <strong>XKCD</strong>, легко читаемые <strong>фонетические пароли</strong> и
+                    генератор
+                    тестовых <strong>ФИО</strong>.
+                </p>
+                <p>
+                    Поддерживаются латиница и кириллица, настройка спецсимволов, исключение похожих знаков, пакетная
+                    генерация и мгновенная оценка криптостойкости (энтропии в битах).
+                </p>
+            </section>
+        </div>
+    </dialog>
+
+    <script type="module" src="/src/main.ts"></script>
+
+    <!-- Логика встраивания кнопки в шапку и открытия окна проектов -->
+    <script>
+        (function () {
+            const btn = document.getElementById('hubBtn');
+            const dlg = document.getElementById('hubDialog');
+            const closeBtn = document.getElementById('hubCloseBtn');
+            let adRendered = false;
+
+            function mountIntoHeader() {
+                const header = document.querySelector('#app header');
+                if (!header || !btn || header.contains(btn)) return false;
+                const actions = header.querySelector(':scope > div:last-child, :scope > nav:last-child');
+                if (actions && actions !== header.firstElementChild) {
+                    actions.prepend(btn);
+                } else {
+                    header.appendChild(btn);
+                }
+                return true;
+            }
+
+            if (!mountIntoHeader()) {
+                const obs = new MutationObserver(() => {
+                    if (mountIntoHeader()) obs.disconnect();
+                });
+                const appRoot = document.getElementById('app');
+                if (appRoot) obs.observe(appRoot, { childList: true, subtree: true });
+            }
+
+            if (btn && dlg) {
+                btn.addEventListener('click', () => {
+                    dlg.showModal();
+                    if (!adRendered) {
+                        adRendered = true;
+                        window.yaContextCb.push(() => {
+                            Ya.Context.AdvManager.render({
+                                "blockId": "R-A-20314528-1",
+                                "renderTo": "yandex_rtb_R-A-20314528-1"
+                            });
+                        });
+                    }
+                });
+                closeBtn?.addEventListener('click', () => dlg.close());
+                dlg.addEventListener('click', (e) => {
+                    if (e.target === dlg) dlg.close();
+                });
+            }
+        })();
+    </script>
+</body>
+
 </html>
