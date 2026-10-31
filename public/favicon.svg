@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="G-PASS TERMINAL">
+  <title>G-PASS TERMINAL</title>
+  <rect width="64" height="64" rx="14" fill="#0a0a0a" />
+  <g fill="#9ef523">
+    <path d="M32 9.5C22.4 9.5 14.5 17.2 14.5 26.8c0 5.8 2.5 9.8 5.3 12.6v5c0 4.2 3.4 7.6 7.6 7.6h9.2c4.2 0 7.6-3.4 7.6-7.6v-5c2.8-2.8 5.3-6.8 5.3-12.6C49.5 17.2 41.6 9.5 32 9.5Z" />
+  </g>
+  <g fill="#0a0a0a">
+    <ellipse cx="25.3" cy="27" rx="4.7" ry="5.5" />
+    <ellipse cx="38.7" cy="27" rx="4.7" ry="5.5" />
+    <path d="M32 32.4 36.2 40.4H27.8Z" />
+  </g>
+  <g stroke="#0a0a0a" stroke-width="1.9" stroke-linecap="round">
+    <path d="M27.6 44.6v6.2" />
+    <path d="M32 44.6v6.4" />
+    <path d="M36.4 44.6v6.2" />
+  </g>
+</svg>
